@@ -1,0 +1,86 @@
+# ============================================================
+# 小德社区 .gitignore
+# ============================================================
+
+# ---------- 签名密钥（最高优先级：泄露=别人可伪造你的 App）----------
+*.keystore
+*.jks
+*.p12
+*.pem
+keystore.properties
+signing.properties
+
+# ---------- 本地配置（含密码/SDK 路径）----------
+local.properties
+gradle.properties.local
+.env
+.env.*
+!.env.example
+secrets.properties
+private.properties
+
+# ---------- 数据库（含真实用户数据）----------
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+
+# ---------- 构建产物 ----------
+build/
+*/build/
+.gradle/
+gradle-app.setting
+!gradle/wrapper/gradle-wrapper.jar
+.gradletasknamecache
+captures/
+.cxx/
+release/
+output/
+*.apk
+*.aab
+*.aar
+*.ap_
+*.dex
+*.class
+*.jar
+!gradle-wrapper.jar
+*.hprof
+lint-results*.html
+lint-results*.xml
+
+# ---------- IDE ----------
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.project
+.classpath
+*.launch
+.navigation/
+.DS_Store
+Thumbs.db
+
+# ---------- 日志 ----------
+*.log
+logs/
+nohup.out
+
+# ---------- 备份文件（项目中曾积累 200+ 个 .bak）----------
+*.bak
+*.bak.*
+*.bak_*
+*.old
+*.orig
+*.rej
+*.swp
+*~
+
+# ---------- 临时文件 ----------
+tmp/
+temp/
+*.tmp
+.cache/
