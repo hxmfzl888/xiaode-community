@@ -298,6 +298,9 @@ interface ApiService {
     @GET("api/apps/{id}/comments")
     suspend fun appComments(@Path("id") id: Int): List<AppCommentOut>
 
+    @DELETE("api/apps/comments/{cid}")
+    suspend fun deleteAppComment(@Path("cid") cid: Int): retrofit2.Response<Unit>
+
     @POST("api/apps/{id}/comments")
     suspend fun addAppComment(@Path("id") id: Int, @Body body: AppCommentIn): AppCommentOut
 
@@ -343,6 +346,19 @@ interface ApiService {
 
     @GET("api/moments/liked")
     suspend fun likedMoments(@Query("limit") limit: Int = 30, @Query("offset") offset: Int = 0): List<MomentOut>
+
+    // ===== FAV_VIEW_V1: 收藏 =====
+    @GET("api/moments/favorites")
+    suspend fun favoriteMoments(@Query("limit") limit: Int = 20, @Query("offset") offset: Int = 0): List<MomentOut>
+
+    @POST("api/moments/{id}/favorite")
+    suspend fun favoriteMoment(@Path("id") id: Int): FavoriteResult
+
+    @DELETE("api/moments/{id}/favorite")
+    suspend fun unfavoriteMoment(@Path("id") id: Int): FavoriteResult
+
+    @GET("api/moments/{id}/favorite")
+    suspend fun favoriteStatus(@Path("id") id: Int): FavoriteResult
 
     @GET("api/app/version")
     suspend fun appVersion(): VersionInfo
@@ -454,6 +470,16 @@ interface ApiService {
 
     @POST("api/resources/{rid}/tip")
     suspend fun resTip(@Path("rid") rid: Int, @Body body: ResTipIn): ResTipOut
+
+    // ===== RES_COMMENT_V1: 资源评论 =====
+    @GET("api/resources/comments/{rid}")
+    suspend fun resourceComments(@Path("rid") rid: Int): List<ResourceCommentOut>
+
+    @POST("api/resources/{rid}/comments")
+    suspend fun addResourceComment(@Path("rid") rid: Int, @Body body: ResourceCommentIn): ResourceCommentOut
+
+    @DELETE("api/resources/comments/{cid}")
+    suspend fun deleteResourceComment(@Path("cid") cid: Int): retrofit2.Response<Unit>
 
     @DELETE("api/resources/{rid}")
     suspend fun deleteResource(@Path("rid") rid: Int): Unit

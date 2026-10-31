@@ -35,6 +35,8 @@ fun MomentCard(
     onOpenDetail: () -> Unit,
     onOpenUser: (Int) -> Unit = {},
     onReport: () -> Unit = {},
+    // FAV_VIEW_CARD_V1: 收藏回调（默认空实现，未接的页面不显示收藏按钮）
+    onFavorite: (() -> Unit)? = null,
             ) {
     var menuOpen by remember { mutableStateOf(false) }
     var viewerImages by remember { mutableStateOf<List<String>>(emptyList()) }
@@ -210,7 +212,63 @@ fun MomentCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
+                // FAV_VIEW_CARD_V1: 浏览量（只读展示）
+                Row(
+                    Modifier
+                        .clip(RoundedCornerShape(50))
+                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f))
+                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        Icons.Filled.Visibility, null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(15.dp),
+                    )
+                    Spacer(Modifier.width(5.dp))
+                    Text(
+                        formatCount(m.viewCount),
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
                 Spacer(Modifier.weight(1f))
+                // FAV_VIEW_CARD_V1: 收藏按钮（最右侧，仅接了回调才显示）
+                if (onFavorite != null) {
+                    val favScale by animateFloatAsState(
+                        targetValue = if (m.favorited) 1.18f else 1f,
+                        animationSpec = spring(dampingRatio = 0.42f, stiffness = Spring.StiffnessMediumLow),
+                        label = "favBounce",
+                    )
+                    Row(
+                        Modifier
+                            .clip(RoundedCornerShape(50))
+                            .background(
+                                if (m.favorited) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+                                else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)
+                            )
+                            .clickable(onClick = onFavorite)
+                            .padding(horizontal = 12.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            if (m.favorited) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder, null,
+                            tint = if (m.favorited) MaterialTheme.colorScheme.primary
+                                   else MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier
+                                .size(16.dp)
+                                .graphicsLayer { scaleX = favScale; scaleY = favScale },
+                        )
+                        Spacer(Modifier.width(5.dp))
+                        Text(
+                            if (m.favorited) "已收藏" else "收藏",
+                            fontSize = 12.sp,
+                            fontWeight = if (m.favorited) FontWeight.SemiBold else FontWeight.Normal,
+                            color = if (m.favorited) MaterialTheme.colorScheme.primary
+                                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
             }
         }
     }
@@ -297,5 +355,17 @@ fun timeAgo(iso: String): String {
             val t = java.time.LocalDateTime.parse(iso).atZone(java.time.ZoneOffset.UTC).toInstant().toEpochMilli()
             "${(System.currentTimeMillis() - t) / 86_400_000}天前"
         } catch (_: Exception) { iso.orEmpty().take(10) }
+    }
+}
+
+
+/**
+ * FAV_VIEW_CARD_V1: 数字格式化 —— 1234 → 1234，12345 → 1.2万
+ */
+private fun formatCount(n: Int): String {
+    return when {
+        n < 10000 -> n.toString()
+        n < 100000000 -> String.format("%.1f万", n / 10000.0)
+        else -> String.format("%.1f亿", n / 100000000.0)
     }
 }

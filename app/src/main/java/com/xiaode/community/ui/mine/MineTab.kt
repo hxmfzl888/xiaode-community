@@ -207,6 +207,7 @@ fun MineTab(nav: NavController) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                         GridEntry(Icons.Filled.Notifications, "消息", badge = unread) { nav.navigate("messages") }
                         GridEntry(Icons.Filled.Favorite, "我的点赞") { nav.navigate("my_likes") }
+                        GridEntry(Icons.Filled.Bookmark, "我的收藏") { nav.navigate("my_favorites") }
                         GridEntry(Icons.Filled.Forum, "我的频道") { nav.navigate("my_channels") }
                         GridEntry(Icons.Filled.SupportAgent, "小德答疑") { nav.navigate("support") }
                     }

@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -40,16 +41,24 @@ import kotlin.math.roundToInt
 /** 我的帖子 */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyMomentsScreen(nav: NavController) = MomentListScreen(nav, "我的帖子", false)
+fun MyMomentsScreen(nav: NavController) = MomentListScreen(nav, "我的帖子", "mine")
 
 /** 我的点赞 */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyLikesScreen(nav: NavController) = MomentListScreen(nav, "我的点赞", true)
+fun MyLikesScreen(nav: NavController) = MomentListScreen(nav, "我的点赞", "liked")
+
+/** FAV_VIEW_LIST_V1: 我的收藏 */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MyFavoritesScreen(nav: NavController) = MomentListScreen(nav, "我的收藏", "fav")
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun MomentListScreen(nav: NavController, title: String, isLiked: Boolean) {
+private fun MomentListScreen(nav: NavController, title: String, mode: String) {
+    // FAV_VIEW_LIST_V1: mode = mine / liked / fav
+    val isLiked = mode == "liked"
+    val isFav = mode == "fav"
     val api = Repo.api
     val scope = rememberCoroutineScope()
     val snackbar = remember { SnackbarHostState() }
@@ -59,7 +68,11 @@ private fun MomentListScreen(nav: NavController, title: String, isLiked: Boolean
 
     suspend fun load() {
         loading = true
-        val r = if (isLiked) safeCall { api.likedMoments() } else safeCall { api.myMoments() }
+        val r = when (mode) {
+            "liked" -> safeCall { api.likedMoments() }
+            "fav" -> safeCall { api.favoriteMoments() }
+            else -> safeCall { api.myMoments() }
+        }
         if (r is ApiResult.Ok) list = r.data
         loading = false
     }
@@ -87,12 +100,24 @@ private fun MomentListScreen(nav: NavController, title: String, isLiked: Boolean
             when {
                 loading -> SkeletonPostList(4)
                 list.isEmpty() -> IconEmptyState(
-                    icon = if (isLiked) Icons.Filled.FavoriteBorder else Icons.Filled.EditNote,
-                    title = if (isLiked) "还没有点赞过帖子" else "还没有发布帖子",
-                    desc = if (isLiked) "去广场看看有什么好内容" else "分享你的第一个想法",
-                    actionText = if (isLiked) "去广场" else "发一条帖子",
+                    icon = when (mode) {
+                        "liked" -> Icons.Filled.FavoriteBorder
+                        "fav" -> Icons.Filled.BookmarkBorder
+                        else -> Icons.Filled.EditNote
+                    },
+                    title = when (mode) {
+                        "liked" -> "还没有点赞过帖子"
+                        "fav" -> "还没有收藏帖子"
+                        else -> "还没有发布帖子"
+                    },
+                    desc = when (mode) {
+                        "liked" -> "去广场看看有什么好内容"
+                        "fav" -> "看到喜欢的帖子，点右下角书签收藏"
+                        else -> "分享你的第一个想法"
+                    },
+                    actionText = if (mode == "mine") "发一条帖子" else "去广场",
                     onAction = {
-                        if (isLiked) nav.navigate("square") else nav.navigate("post")
+                        if (mode == "mine") nav.navigate("post") else nav.navigate("square")
                     },
                 )
                 else -> LazyColumn(Modifier.fillMaxSize()) {
@@ -127,6 +152,14 @@ private fun MomentListScreen(nav: NavController, title: String, isLiked: Boolean
                                         }
                                     },
                                     onOpenDetail = { nav.navigate("detail/${m.id}") },
+                                    onFavorite = {
+                                        scope.launch {
+                                            if (safeCall { api.unfavoriteMoment(m.id) } is ApiResult.Ok) {
+                                                list = list.filter { it.id != m.id }
+                                                snackbar.showSnackbar("已取消收藏")
+                                            }
+                                        }
+                                    },
                                 )
                             }
                         } else {
@@ -135,6 +168,24 @@ private fun MomentListScreen(nav: NavController, title: String, isLiked: Boolean
                                 onLike = { scope.launch { safeCall { api.likeMoment(m.id) }; load() } },
                                 onDelete = {},
                                 onOpenDetail = { nav.navigate("detail/${m.id}") },
+                                onFavorite = {
+                                    scope.launch {
+                                        val target = !m.favorited
+                                        val r = if (target) safeCall { api.favoriteMoment(m.id) }
+                                                else safeCall { api.unfavoriteMoment(m.id) }
+                                        if (r is ApiResult.Ok) {
+                                            if (mode == "fav" && !target) {
+                                                list = list.filter { it.id != m.id }
+                                                snackbar.showSnackbar("已取消收藏")
+                                            } else {
+                                                snackbar.showSnackbar(if (target) "已收藏" else "已取消收藏")
+                                                load()
+                                            }
+                                        } else if (r is ApiResult.Err) {
+                                            snackbar.showSnackbar(r.message)
+                                        }
+                                    }
+                                },
                             )
                         }
                     }

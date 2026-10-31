@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.xiaode.community.XiaodeApp
 import com.xiaode.community.data.*
 import com.xiaode.community.ui.common.*
 import com.xiaode.community.ui.theme.BrandBlue
@@ -50,6 +51,10 @@ fun AppDetailScreen(nav: NavController, appId: Int) {
     var loading by remember { mutableStateOf(true) }
     var commentText by remember { mutableStateOf("") }
     var rating by remember { mutableIntStateOf(5) }
+    // UNIFIED_COMMENT_UI_V1: 当前用户 ID（判断能否删自己的评论）
+    val myId = XiaodeApp.store.currentUserJson?.let {
+        com.xiaode.community.ui.square.extractId(it)
+    } ?: 0
     var reportOpen by remember { mutableStateOf(false) }
     var tipOpen by remember { mutableStateOf(false) }
 
@@ -180,66 +185,53 @@ fun AppDetailScreen(nav: NavController, appId: Int) {
                     }
                 }
             }
-            // 评论输入
-            item {
-                Spacer(Modifier.height(10.dp))
-                Card(Modifier.fillMaxWidth().padding(horizontal = 12.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), shape = RoundedCornerShape(12.dp)) {
-                    Column(Modifier.padding(14.dp)) {
-                        Text("发表评价", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                        Spacer(Modifier.height(6.dp))
-                        Row {
-                            (1..5).forEach { s ->
-                                Icon(Icons.Filled.Star, null, tint = if (s <= rating) Color(0xFFFFC107) else Color(0xFFDDDDDD),
-                                    modifier = Modifier.size(24.dp).clickable { rating = s })
-                            }
-                        }
-                        Spacer(Modifier.height(6.dp))
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            OutlinedTextField(value = commentText, onValueChange = { commentText = it },
-                                placeholder = { Text("说说你的使用体验", fontSize = 13.sp) }, modifier = Modifier.weight(1f), maxLines = 3)
-                            Spacer(Modifier.width(8.dp))
-                            Button(
-                                onClick = {
-                                    if (commentText.isBlank()) return@Button
-                                    scope.launch {
-                                        when (val r = safeCall { api.addAppComment(a.id, AppCommentIn(commentText.trim(), rating)) }) {
-                                            is ApiResult.Ok -> { commentText = ""; reload() }
-                                            is ApiResult.Err -> snackbar.showSnackbar(r.message)
-                                        }
-                                    }
-                                },
-                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                            ) { Text("发布") }
-                        }
-                    }
-                }
-            }
-            // 评论列表
-            item {
-                Spacer(Modifier.height(6.dp))
-                Text("全部评价（${comments.size}）", fontWeight = FontWeight.Medium, fontSize = 13.sp, modifier = Modifier.padding(start = 16.dp, top = 6.dp))
-            }
-            if (comments.isEmpty()) {
-                item { EmptyBox("还没有评价") }
-            } else {
-                itemsIndexed(comments, key = { i, it -> "${it.id}_$i" }) { _, c ->
-                    Card(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), shape = RoundedCornerShape(10.dp)) {
-                        Row(Modifier.padding(12.dp)) {
-                            XiaodeAvatar(c.avatar, 36.dp)
-                            Spacer(Modifier.width(10.dp))
-                            Column(Modifier.weight(1f)) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text(c.nickname, fontSize = 13.sp, fontWeight = FontWeight.Medium)
-                                    Spacer(Modifier.width(6.dp))
-                                    (1..c.rating).forEach { _ -> Icon(Icons.Filled.Star, null, tint = Color(0xFFFFC107), modifier = Modifier.size(12.dp)) }
+            // UNIFIED_COMMENT_UI_V1: 统一评论组件（应用带星级评分）
+            CommentSection(
+                comments = comments.map {
+                    UiComment(
+                        id = it.id,
+                        userId = it.userId,
+                        nickname = it.nickname,
+                        avatar = it.avatar,
+                        content = it.content,
+                        rating = it.rating,
+                        createdAt = it.createdAt,
+                    )
+                },
+                showRating = true,
+                inputText = commentText,
+                onInputChange = { commentText = it },
+                rating = rating,
+                onRatingChange = { rating = it },
+                onSubmit = {
+                    if (commentText.isNotBlank()) {
+                        val txt = commentText.trim()
+                        scope.launch {
+                            when (val r = safeCall { api.addAppComment(appId, AppCommentIn(txt, rating)) }) {
+                                is ApiResult.Ok -> {
+                                    commentText = ""
+                                    snackbar.showSnackbar("评价已发布")
+                                    reload()
                                 }
-                                Spacer(Modifier.height(3.dp))
-                                Text(c.content, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                is ApiResult.Err -> snackbar.showSnackbar(r.message)
                             }
                         }
                     }
-                }
-            }
+                },
+                onDelete = { c ->
+                    scope.launch {
+                        val r = safeCall { api.deleteAppComment(c.id) }
+                        if (r is ApiResult.Err) {
+                            snackbar.showSnackbar(r.message)
+                        } else {
+                            snackbar.showSnackbar("已删除")
+                            reload()
+                        }
+                    }
+                },
+                myId = myId,
+                title = "全部评价",
+            )
             item { Spacer(Modifier.height(30.dp)) }
         }
     }

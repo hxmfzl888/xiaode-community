@@ -24,7 +24,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.xiaode.community.XiaodeApp
 import com.xiaode.community.data.*
+import com.xiaode.community.ui.common.*
 import com.xiaode.community.ui.common.EntranceAnimation
 import kotlinx.coroutines.launch
 
@@ -41,6 +43,16 @@ fun ResourceDetailScreen(nav: NavController, rid: Int) {
     var tipAmount by remember { mutableStateOf("5") }
     var viewing by remember { mutableStateOf<List<String>>(emptyList()) }
     var viewingIndex by remember { mutableIntStateOf(0) }
+    // RES_COMMENT_V1: 评论
+    var comments by remember { mutableStateOf<List<ResourceCommentOut>>(emptyList()) }
+    var commentText by remember { mutableStateOf("") }
+    val myId = XiaodeApp.store.currentUserJson?.let {
+        com.xiaode.community.ui.square.extractId(it)
+    } ?: 0
+    suspend fun loadComments() {
+        val cr = safeCall { Repo.api.resourceComments(rid) }
+        if (cr is ApiResult.Ok) comments = cr.data
+    }
 
     suspend fun reload() {
         when (val res = safeCall { Repo.api.resourceDetail(rid) }) {
@@ -49,7 +61,10 @@ fun ResourceDetailScreen(nav: NavController, rid: Int) {
         }
         loading = false
     }
-    LaunchedEffect(rid) { reload() }
+    LaunchedEffect(rid) {
+        reload()
+        loadComments()
+    }
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbar) },
@@ -371,6 +386,51 @@ fun ResourceDetailScreen(nav: NavController, rid: Int) {
                     )
                 }
             }
+
+            // RES_COMMENT_V1: 评论区（复用统一组件，资源无星级）
+            CommentSection(
+                comments = comments.map {
+                    UiComment(
+                        id = it.id,
+                        userId = it.userId,
+                        nickname = it.nickname,
+                        avatar = it.avatar,
+                        content = it.content,
+                        createdAt = it.createdAt,
+                    )
+                },
+                showRating = false,
+                inputText = commentText,
+                onInputChange = { commentText = it },
+                onSubmit = {
+                    if (commentText.isNotBlank()) {
+                        val txt = commentText.trim()
+                        scope.launch {
+                            when (val r2 = safeCall { Repo.api.addResourceComment(rid, ResourceCommentIn(txt)) }) {
+                                is ApiResult.Ok -> {
+                                    commentText = ""
+                                    snackbar.showSnackbar("评论已发布")
+                                    loadComments()
+                                }
+                                is ApiResult.Err -> snackbar.showSnackbar(r2.message)
+                            }
+                        }
+                    }
+                },
+                onDelete = { c ->
+                    scope.launch {
+                        val r3 = safeCall { Repo.api.deleteResourceComment(c.id) }
+                        if (r3 is ApiResult.Err) {
+                            snackbar.showSnackbar(r3.message)
+                        } else {
+                            snackbar.showSnackbar("已删除")
+                            loadComments()
+                        }
+                    }
+                },
+                myId = myId,
+                title = "全部评论",
+            )
 
             item {
                 Spacer(Modifier.height(8.dp))

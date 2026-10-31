@@ -186,6 +186,7 @@ fun XiaodeRoot() {
                     composable("app_mine") { AppMineScreen(nav) }
                     composable("my_moments") { com.xiaode.community.ui.mine.MyMomentsScreen(nav) }
                     composable("my_likes") { com.xiaode.community.ui.mine.MyLikesScreen(nav) }
+                    composable("my_favorites") { com.xiaode.community.ui.mine.MyFavoritesScreen(nav) }
                     composable("account") { AccountScreen(nav) }
                     composable("security") { com.xiaode.community.ui.mine.SecurityScreen(nav) }
                     composable("settings") { com.xiaode.community.ui.mine.SettingsScreen(nav) }

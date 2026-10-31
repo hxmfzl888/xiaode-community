@@ -138,6 +138,7 @@ fun NotificationsScreen(nav: NavController) {
                     itemsIndexed(filtered, key = { i, it -> "${it.id}_${i}" }) { _, n ->
                         NotificationRow(
                             n = n,
+                            onOpenUser = { uid -> nav.navigate("user/$uid") },
                             onClick = {
                                 scope.launch {
                                     safeCall { api.readOne(n.id) }
@@ -180,6 +181,8 @@ private fun NotificationRow(
     onClick: () -> Unit,
     onPin: () -> Unit = {},
     onDelete: () -> Unit = {},
+    // AVATAR_CLICK_PROFILE_V1: 点头像进对方主页
+    onOpenUser: (Int) -> Unit = {},
 ) {
     var menu by remember { mutableStateOf(false) }
     val icon = when (n.type) {
@@ -225,7 +228,11 @@ private fun NotificationRow(
                         )
                     }
                 } else {
-                    XiaodeAvatar(n.actorAvatar, 40.dp)
+                    // AVATAR_CLICK_PROFILE_V1: 点头像进对方主页
+                    XiaodeAvatar(
+                        n.actorAvatar, 40.dp,
+                        onClick = { if (n.actorId != 0) onOpenUser(n.actorId) },
+                    )
                 }
                 Spacer(Modifier.width(10.dp))
                 Column(Modifier.weight(1f)) {

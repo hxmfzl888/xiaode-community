@@ -1,4 +1,7 @@
 package com.xiaode.community.ui.square
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.animateFloatAsState
 import kotlinx.coroutines.launch
 
 import androidx.compose.foundation.background
@@ -55,6 +58,9 @@ fun DetailScreen(nav: NavController, momentId: Int) {
     var replyTo by remember { mutableStateOf<CommentOut?>(null) }
     var liked by remember { mutableStateOf(false) }
     var likeCount by remember { mutableIntStateOf(0) }
+    // FAV_VIEW_DETAIL_V1
+    var favorited by remember { mutableStateOf(false) }
+    var viewCount by remember { mutableIntStateOf(0) }
     var commentIsCode by remember { mutableStateOf(false) }
     var commentLang by remember { mutableStateOf("js") }
 
@@ -65,6 +71,8 @@ fun DetailScreen(nav: NavController, momentId: Int) {
                 comments = r.data.comments
                 liked = r.data.liked
                 likeCount = r.data.likeCount
+                favorited = r.data.favorited
+                viewCount = r.data.viewCount
             }
             is ApiResult.Err -> snackbar.showSnackbar(r.message)
         }
@@ -169,6 +177,36 @@ fun DetailScreen(nav: NavController, momentId: Int) {
                 },
                 // SHARE_FEATURE_V1: 分享按钮
                 actions = {
+                    // FAV_VIEW_DETAIL_V1: 收藏按钮
+                    val favScale by animateFloatAsState(
+                        targetValue = if (favorited) 1.18f else 1f,
+                        animationSpec = spring(
+                            dampingRatio = 0.42f,
+                            stiffness = Spring.StiffnessMediumLow,
+                        ),
+                        label = "detailFavBounce",
+                    )
+                    IconButton(onClick = {
+                        scope.launch {
+                            val r = if (favorited) safeCall { api.unfavoriteMoment(momentId) }
+                                    else safeCall { api.favoriteMoment(momentId) }
+                            when (r) {
+                                is ApiResult.Ok -> {
+                                    favorited = r.data.favorited
+                                    snackbar.showSnackbar(if (favorited) "已收藏" else "已取消收藏")
+                                }
+                                is ApiResult.Err -> snackbar.showSnackbar(r.message)
+                            }
+                        }
+                    }) {
+                        Icon(
+                            if (favorited) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder,
+                            if (favorited) "取消收藏" else "收藏",
+                            tint = if (favorited) MaterialTheme.colorScheme.primary
+                                   else MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.graphicsLayer { scaleX = favScale; scaleY = favScale },
+                        )
+                    }
                     IconButton(onClick = { showShare = true }) {
                         Icon(
                             Icons.Filled.Share,
@@ -257,7 +295,11 @@ fun DetailScreen(nav: NavController, momentId: Int) {
                         }
                         // 作者行
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            XiaodeAvatar(m.avatar, 34.dp, m.levelEffect, m.isVip)
+                            // AVATAR_CLICK_PROFILE_V1: 点头像进作者主页
+                            XiaodeAvatar(
+                                m.avatar, 34.dp, m.levelEffect, m.isVip,
+                                onClick = { if (m.userId != 0) nav.navigate("user/${m.userId}") },
+                            )
                             Spacer(Modifier.width(9.dp))
                             Column(Modifier.weight(1f)) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -397,6 +439,7 @@ fun DetailScreen(nav: NavController, momentId: Int) {
                         c = c,
                         myId = myId,
                         onReplyTo = { replyTo = it },
+                        onOpenUser = { uid -> nav.navigate("user/$uid") },
                         onReplyLike = { rp ->
                             scope.launch {
                                 when (val r = safeCall { api.likeComment(rp.id) }) {
@@ -451,10 +494,15 @@ private fun CommentItem(
     onReplyLike: (CommentOut) -> Unit = {},
     onReplyDelete: (CommentOut) -> Unit = {},
     onReplyTo: (CommentOut) -> Unit = {},
+    // AVATAR_CLICK_PROFILE_V1: 点头像进评论者主页
+    onOpenUser: (Int) -> Unit = {},
 ) {
     var showReplies by remember { mutableStateOf(false) }
     Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
-        XiaodeAvatar(c.avatar, 34.dp, c.levelEffect, c.isVip)
+        XiaodeAvatar(
+            c.avatar, 34.dp, c.levelEffect, c.isVip,
+            onClick = { if (c.userId != 0) onOpenUser(c.userId) },
+        )
         Spacer(Modifier.width(10.dp))
         Column(Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -551,7 +599,10 @@ private fun CommentItem(
                 ) {
                     c.replies.forEach { rp ->
                         Row(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-                            XiaodeAvatar(rp.avatar, 26.dp, rp.levelEffect, rp.isVip)
+                            XiaodeAvatar(
+                                rp.avatar, 26.dp, rp.levelEffect, rp.isVip,
+                                onClick = { if (rp.userId != 0) onOpenUser(rp.userId) },
+                            )
                             Spacer(Modifier.width(8.dp))
                             Column(Modifier.weight(1f)) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {

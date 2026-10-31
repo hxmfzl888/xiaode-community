@@ -111,6 +111,9 @@ data class MomentOut(
     @SerializedName("is_vip") val isVip: Boolean = false,
     // v2.1: 分类标签
     val tags: List<String> = emptyList(),
+    // FAV_VIEW_V1: 浏览量 + 是否已收藏
+    @SerializedName("view_count") val viewCount: Int = 0,
+    val favorited: Boolean = false,
     @SerializedName("comments") private val _comments: List<CommentOut>? = emptyList(),
 ) {
     // Gson 可能把 null 写进非空 List，这里统一兜底，避免 NPE
@@ -440,6 +443,20 @@ data class AppCommentOut(
 
 data class AppCommentIn(val content: String, val rating: Int = 5)
 
+
+/** RES_COMMENT_V1: 资源评论（无星级） */
+data class ResourceCommentOut(
+    val id: Int,
+    @SerializedName("resource_id") val resourceId: Int = 0,
+    @SerializedName("user_id") val userId: Int = 0,
+    val nickname: String = "",
+    val avatar: String = "",
+    val content: String = "",
+    @SerializedName("created_at") val createdAt: String = "",
+)
+
+data class ResourceCommentIn(val content: String)
+
 data class DownloadResult(
     val ok: Boolean = true,
     @SerializedName("download_count") val downloadCount: Int = 0,
@@ -755,3 +772,11 @@ data class ResUnlockOut(
 data class ResDownloadOut(val ok: Boolean = true, val url: String = "")
 
 data class ResCategoriesOut(val items: List<String> = emptyList())
+
+
+/** FAV_VIEW_V1: 收藏接口返回 */
+data class FavoriteResult(
+    val ok: Boolean = true,
+    val favorited: Boolean = false,
+    val changed: Boolean = false,
+)

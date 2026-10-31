@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -223,9 +224,44 @@ fun UserProfileScreen(nav: NavController, userId: Int) {
                                 VDivider()
                                 StatCol("应用", usr.appCount, Modifier.weight(1f)) { tab = 2 }
                                 VDivider()
-                                StatCol("粉丝", usr.followerCount, Modifier.weight(1f)) { nav.navigate("follow_list/followers") }
+                                StatCol("粉丝", usr.followerCount, Modifier.weight(1f), enabled = false)
                                 VDivider()
-                                StatCol("关注", usr.followingCount, Modifier.weight(1f)) { nav.navigate("follow_list/following") }
+                                StatCol("关注", usr.followingCount, Modifier.weight(1f), enabled = false)
+                            }
+                            // PROFILE_FAV_ENTRY_V1: 看自己主页时，显示「我的收藏」入口
+                            if (usr.isSelf) {
+                                Spacer(Modifier.height(12.dp))
+                                Row(
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(
+                                            MaterialTheme.colorScheme.primary.copy(alpha = 0.07f)
+                                        )
+                                        .clickable { nav.navigate("my_favorites") }
+                                        .padding(horizontal = 14.dp, vertical = 11.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Icon(
+                                        Icons.Filled.Bookmark,
+                                        null,
+                                        tint = BrandBlue,
+                                        modifier = Modifier.size(17.dp),
+                                    )
+                                    Spacer(Modifier.width(9.dp))
+                                    Text(
+                                        "我的收藏",
+                                        fontSize = 13.5.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                    )
+                                    Spacer(Modifier.weight(1f))
+                                    Text(
+                                        "查看全部 ›",
+                                        fontSize = 12.sp,
+                                        color = BrandBlue.copy(alpha = 0.85f),
+                                    )
+                                }
                             }
                             if (!usr.isSelf) {
                                 Spacer(Modifier.height(14.dp))
@@ -430,8 +466,18 @@ private fun EmptyHint(emoji: String, text: String) {
 }
 
 @Composable
-private fun StatCol(label: String, n: Int, mod: Modifier, onClick: () -> Unit) {
-    Column(mod.clickable { onClick() }, horizontalAlignment = Alignment.CenterHorizontally) {
+private fun StatCol(
+    label: String,
+    n: Int,
+    mod: Modifier,
+    // PROFILE_STAT_NOCLICK_V1: 传 false 则整个格子不可点击（如粉丝/关注）
+    enabled: Boolean = true,
+    onClick: () -> Unit = {},
+) {
+    Column(
+        if (enabled) mod.clickable { onClick() } else mod,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
         Text("$n", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
         Spacer(Modifier.height(2.dp))
         Text(label, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
