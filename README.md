@@ -10,9 +10,9 @@
 [![Kotlin](https://img.shields.io/badge/Kotlin-1.9.22-7F52FF.svg)](https://kotlinlang.org)
 [![Compose](https://img.shields.io/badge/Jetpack%20Compose-BOM-4285F4.svg)](https://developer.android.com/jetpack/compose)
 [![Android](https://img.shields.io/badge/Android-5.0%2B%20(API%2024)-3DDC84.svg)](https://developer.android.com)
-[![Version](https://img.shields.io/badge/version-2.5.2-brightgreen.svg)](https://xiaode.yuxian.shop)
+[![Version](https://img.shields.io/badge/version-2.5.2-brightgreen.svg)](https://delai.fun)
 
-[官网](https://xiaode.yuxian.shop) · [下载 APK](https://xiaode.yuxian.shop/download/小德社区_2.5.2.apk) · [问题反馈](https://github.com/hxmfzl888/xiaode-community/issues)
+[官网](https://delai.fun) · [下载 APK](https://delai.fun/download/小德社区_2.5.2.apk) · [问题反馈](https://github.com/hxmfzl888/xiaode-community/issues)
 
 </div>
 
