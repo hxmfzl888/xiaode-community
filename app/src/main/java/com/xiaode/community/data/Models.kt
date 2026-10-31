@@ -19,7 +19,13 @@ data class TokenOut(
     val user: UserOut,
 )
 
-data class SendCodeIn(val email: String, val purpose: String = "register")
+data class SendCodeIn(
+    val email: String,
+    val purpose: String = "register",
+    // CAPTCHA_V1: 人机验证
+    @SerializedName("captcha_token") val captchaToken: String = "",
+    @SerializedName("captcha_answer") val captchaAnswer: Int = 0,
+)
 
 data class ResetPasswordIn(
     val email: String,
@@ -45,6 +51,8 @@ data class ChangeEmailIn(
 // ---------- 用户 ----------
 data class UserOut(
     val id: Int,
+    // UID_CLIENT_V1
+    val uid: String = "",
     val username: String,
     val nickname: String = "",
     val avatar: String = "",
@@ -519,6 +527,8 @@ data class SocialUserOut(
     @SerializedName("following_count") val followingCount: Int = 0,
     val followed: Boolean = false,
     @SerializedName("is_self") val isSelf: Boolean = false,
+    // UID_CLIENT_V1: 8 位唯一 ID
+    val uid: String = "",
     @SerializedName("moment_count") val momentCount: Int = 0,
     @SerializedName("app_count") val appCount: Int = 0,
     @SerializedName("page_bg") val pageBg: String = "",
@@ -779,4 +789,31 @@ data class FavoriteResult(
     val ok: Boolean = true,
     val favorited: Boolean = false,
     val changed: Boolean = false,
+)
+
+
+
+// ============================================================
+// UID_CLIENT_V1: 用户搜索结果
+// ============================================================
+data class UserSearchItem(
+    val id: Int = 0,
+    val uid: String = "",
+    val nickname: String = "",
+    val username: String = "",
+    val avatar: String = "",
+    val bio: String = "",
+    val level: Int = 1,
+    @SerializedName("is_vip") val isVip: Boolean = false,
+    @SerializedName("match_type") val matchType: String = "",
+    @SerializedName("follower_count") val followerCount: Int = 0,
+)
+
+// ============================================================
+// CAPTCHA_V1: 人机验证
+// ============================================================
+data class CaptchaOut(
+    val token: String = "",
+    val question: String = "",
+    @SerializedName("expires_in") val expiresIn: Int = 300,
 )

@@ -250,6 +250,17 @@ interface ApiService {
     @GET("api/search/moments")
     suspend fun searchMoments(@Query("q") q: String, @Query("limit") limit: Int = 30, @Query("offset") offset: Int = 0): List<MomentOut>
 
+    // ===== UID_CLIENT_V1: 用户搜索 =====
+    @GET("api/search/users")
+    suspend fun searchUsersByUid(
+        @Query("q") q: String,
+        @Query("limit") limit: Int = 20,
+    ): List<UserSearchItem>
+
+    // ===== CAPTCHA_V1: 人机验证 =====
+    @GET("api/auth/captcha")
+    suspend fun getCaptcha(): CaptchaOut
+
     @GET("api/search/channels")
     suspend fun searchChannels(@Query("q") q: String, @Query("limit") limit: Int = 30, @Query("offset") offset: Int = 0): List<Channel>
 

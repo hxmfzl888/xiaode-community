@@ -11,8 +11,8 @@ android {
         applicationId = "com.xiaode.community"
         minSdk = 24
         targetSdk = 34
-        versionCode = 253
-        versionName = "2.5.3"
+        versionCode = 254
+        versionName = "2.5.4"
         vectorDrawables { useSupportLibrary = true }
     }
 

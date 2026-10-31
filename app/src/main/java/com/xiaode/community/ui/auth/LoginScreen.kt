@@ -77,6 +77,15 @@ fun LoginScreen(nav: NavController, onLoggedIn: () -> Unit) {
     var agreed by remember { mutableStateOf(false) }
     var loading by remember { mutableStateOf(false) }
     var countdown by remember { mutableIntStateOf(0) }
+    // CAPTCHA_UI_V1: 人机验证弹窗
+    var showCaptcha by remember { mutableStateOf(false) }
+    var captchaQ by remember { mutableStateOf("") }
+    var captchaToken by remember { mutableStateOf("") }
+    var captchaInput by remember { mutableStateOf("") }
+    var captchaLoading by remember { mutableStateOf(false) }
+    // 记住"验证通过后要发给哪个邮箱/用途"
+    var pendingEmail by remember { mutableStateOf("") }
+    var pendingPurpose by remember { mutableStateOf("register") }
     var showForgot by remember { mutableStateOf(false) }
 
     // ===== 两步式状态 =====
@@ -332,19 +341,25 @@ fun LoginScreen(nav: NavController, onLoggedIn: () -> Unit) {
                                     scope.launch { snackbar.showSnackbar("请先填写邮箱") }
                                     return@TextButton
                                 }
+                                // CAPTCHA_UI_V1: 先取题弹人机验证，通过后再发码
+                                pendingEmail = email.trim()
+                                pendingPurpose = "register"
+                                captchaInput = ""
+                                captchaToken = ""
+                                captchaLoading = true
+                                showCaptcha = true
                                 scope.launch {
-                                    val r = safeCall { Repo.api.sendCode(SendCodeIn(email = email.trim())) }
-                                    when (r) {
+                                    when (val cr = safeCall { Repo.api.getCaptcha() }) {
                                         is ApiResult.Ok -> {
-                                            snackbar.showSnackbar("验证码已发送，请查收邮箱")
-                                            countdown = 60
-                                            while (countdown > 0) {
-                                                kotlinx.coroutines.delay(1000)
-                                                countdown--
-                                            }
+                                            captchaQ = cr.data.question
+                                            captchaToken = cr.data.token
                                         }
-                                        is ApiResult.Err -> snackbar.showSnackbar(r.message)
+                                        is ApiResult.Err -> {
+                                            showCaptcha = false
+                                            snackbar.showSnackbar("获取验证题失败：" + cr.message)
+                                        }
                                     }
+                                    captchaLoading = false
                                 }
                             },
                             enabled = countdown == 0,
@@ -538,6 +553,74 @@ fun LoginScreen(nav: NavController, onLoggedIn: () -> Unit) {
             )
             Spacer(Modifier.height(30.dp))
         }
+    }
+    // CAPTCHA_UI_V1: 人机验证弹窗
+    if (showCaptcha) {
+        CaptchaDialog(
+            question = captchaQ,
+            input = captchaInput,
+            onInput = { captchaInput = it },
+            loading = captchaLoading,
+            onRefresh = {
+                captchaInput = ""
+                captchaLoading = true
+                scope.launch {
+                    when (val cr = safeCall { Repo.api.getCaptcha() }) {
+                        is ApiResult.Ok -> {
+                            captchaQ = cr.data.question
+                            captchaToken = cr.data.token
+                        }
+                        is ApiResult.Err -> snackbar.showSnackbar(cr.message)
+                    }
+                    captchaLoading = false
+                }
+            },
+            onConfirm = {
+                val ans = captchaInput.trim().toIntOrNull()
+                if (ans == null) {
+                    scope.launch { snackbar.showSnackbar("请输入计算结果") }
+                } else {
+                    scope.launch {
+                        captchaLoading = true
+                        val r = safeCall {
+                            Repo.api.sendCode(
+                                SendCodeIn(
+                                    email = pendingEmail,
+                                    purpose = pendingPurpose,
+                                    captchaToken = captchaToken,
+                                    captchaAnswer = ans,
+                                )
+                            )
+                        }
+                        captchaLoading = false
+                        when (r) {
+                            is ApiResult.Ok -> {
+                                showCaptcha = false
+                                snackbar.showSnackbar("验证码已发送，请查收邮箱")
+                                countdown = 60
+                                while (countdown > 0) {
+                                    kotlinx.coroutines.delay(1000)
+                                    countdown--
+                                }
+                            }
+                            is ApiResult.Err -> {
+                                snackbar.showSnackbar(r.message)
+                                // 答错就换一道题
+                                when (val cr2 = safeCall { Repo.api.getCaptcha() }) {
+                                    is ApiResult.Ok -> {
+                                        captchaQ = cr2.data.question
+                                        captchaToken = cr2.data.token
+                                    }
+                                    is ApiResult.Err -> {}
+                                }
+                                captchaInput = ""
+                            }
+                        }
+                    }
+                }
+            },
+            onDismiss = { showCaptcha = false },
+        )
     }
     if (showForgot) {
         ForgotPasswordDialog(onDismiss = { showForgot = false }, snackbar = snackbar)
@@ -1110,5 +1193,130 @@ private fun ForgotPasswordDialog(onDismiss: () -> Unit, snackbar: SnackbarHostSt
             ) { Text("重置密码") }
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text("取消") } },
+    )
+}
+
+
+// ============================================================
+// CAPTCHA_UI_V1: 人机验证弹窗
+// 一道简单算术题，答对才发验证码。换一题 / 取消 / 确认三个动作。
+// ============================================================
+@Composable
+private fun CaptchaDialog(
+    question: String,
+    input: String,
+    onInput: (String) -> Unit,
+    loading: Boolean,
+    onRefresh: () -> Unit,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = { if (!loading) onDismiss() },
+        shape = RoundedCornerShape(20.dp),
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    Modifier
+                        .size(30.dp)
+                        .clip(RoundedCornerShape(9.dp))
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text("🛡", fontSize = 15.sp)
+                }
+                Spacer(Modifier.width(9.dp))
+                Text("安全验证", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            }
+        },
+        text = {
+            Column {
+                Text(
+                    "为了确认你不是机器人，请计算下面的题目",
+                    fontSize = 12.5.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                )
+                Spacer(Modifier.height(14.dp))
+
+                // 题目卡片
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.06f))
+                        .padding(horizontal = 14.dp, vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    if (loading && question.isBlank()) {
+                        CircularProgressIndicator(
+                            Modifier.size(18.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                        Spacer(Modifier.width(10.dp))
+                        Text("加载中…", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    } else {
+                        Text(
+                            question.ifBlank { "— — —" },
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.weight(1f),
+                        )
+                        // 换一题
+                        Text(
+                            "换一题",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(50))
+                                .clickable(enabled = !loading) { onRefresh() }
+                                .padding(horizontal = 8.dp, vertical = 4.dp),
+                        )
+                    }
+                }
+
+                Spacer(Modifier.height(12.dp))
+
+                // 答案输入
+                androidx.compose.material3.OutlinedTextField(
+                    value = input,
+                    onValueChange = { v ->
+                        // 只允许数字和负号
+                        if (v.length <= 6 && v.all { it.isDigit() || it == '-' }) onInput(v)
+                    },
+                    placeholder = { Text("输入计算结果", fontSize = 13.sp) },
+                    singleLine = true,
+                    enabled = !loading,
+                    shape = RoundedCornerShape(12.dp),
+                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                        keyboardType = androidx.compose.ui.text.input.KeyboardType.Number,
+                    ),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { if (!loading) onConfirm() },
+                enabled = !loading && input.isNotBlank(),
+            ) {
+                if (loading) {
+                    CircularProgressIndicator(
+                        Modifier.size(15.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                } else {
+                    Text("确认并发送", fontWeight = FontWeight.Bold)
+                }
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss, enabled = !loading) {
+                Text("取消", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        },
     )
 }

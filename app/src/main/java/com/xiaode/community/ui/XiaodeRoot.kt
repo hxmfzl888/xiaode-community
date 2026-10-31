@@ -97,6 +97,21 @@ fun XiaodeRoot() {
             return@XiaodeTheme
         }
         val scope = rememberCoroutineScope()
+        // BADGE_LOAD_V1: 未读数（聊天 + 通知 合计），底部「消息」图标显示红点
+        var unreadTotal by remember { mutableStateOf(0) }
+        LaunchedEffect(currentRoute) {
+            if (!showBottomBar) return@LaunchedEffect
+            var sum = 0
+            when (val r = com.xiaode.community.data.safeCall { com.xiaode.community.data.Repo.api.unreadTotal() }) {
+                is com.xiaode.community.data.ApiResult.Ok -> sum += r.data.unread
+                else -> {}
+            }
+            when (val r2 = com.xiaode.community.data.safeCall { com.xiaode.community.data.Repo.api.unreadMessages() }) {
+                is com.xiaode.community.data.ApiResult.Ok -> sum += r2.data.unread
+                else -> {}
+            }
+            unreadTotal = sum
+        }
         val startIndex = TABS.indexOfFirst { it.route == (currentRoute ?: "square") }.coerceAtLeast(0)
         val pagerState = rememberPagerState(initialPage = startIndex) { TABS.size }
         LaunchedEffect(pagerState.settledPage, showBottomBar) {
@@ -119,6 +134,7 @@ fun XiaodeRoot() {
                         currentRoute = currentRoute,
                         pagerPage = pagerState.currentPage + pagerState.currentPageOffsetFraction,
                         onSelect = { i -> scope.launch { pagerState.animateScrollToPage(i) } },
+                        unread = unreadTotal,
                     )
                 }
             }
@@ -233,6 +249,8 @@ private fun AnimatedBottomBar(
     currentRoute: String?,
     pagerPage: Float,
     onSelect: (Int) -> Unit,
+    // BADGE_DOT_V1: 「消息」Tab 未读数
+    unread: Int = 0,
 ) {
     val surf = MaterialTheme.colorScheme.surface
     val active = MaterialTheme.colorScheme.primary
@@ -310,17 +328,23 @@ private fun AnimatedBottomBar(
                             }
                             val sel = selState.value
                             val tint = androidx.compose.ui.graphics.lerp(inactive, active, sel)
-                            Icon(
-                                tab.icon,
-                                contentDescription = tab.label,
-                                tint = tint,
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .graphicsLayer {
-                                        val s = 1f + 0.14f * sel
-                                        scaleX = s; scaleY = s
-                                    },
-                            )
+                            // BADGE_DOT_V1: 图标 + 右上角红点
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    tab.icon,
+                                    contentDescription = tab.label,
+                                    tint = tint,
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                        .graphicsLayer {
+                                            val s = 1f + 0.14f * sel
+                                            scaleX = s; scaleY = s
+                                        },
+                                )
+                                if (tab.route == "chat" && unread > 0) {
+                                    UnreadDot(unread)
+                                }
+                            }
                         }
                     }
                 }
@@ -337,3 +361,34 @@ private fun Modifier.clickableNoRipple(onClick: () -> Unit): Modifier =
         indication = null,
         onClick = onClick,
     )
+
+
+// ============================================================
+// BADGE_DOT_V1: 未读红点（带数字，>99 显示 99+）
+// 视觉：红色圆角胶囊，白字，带一圈与背景同色的描边（避免贴在图标上看不清）
+// ============================================================
+@Composable
+private fun UnreadDot(count: Int) {
+    val text = if (count > 99) "99+" else count.toString()
+    val wide = count > 9
+    Box(
+        Modifier
+            .offset(x = if (wide) 12.dp else 10.dp, y = (-10).dp)
+            .height(15.dp)
+            .widthIn(min = 15.dp)
+            .clip(RoundedCornerShape(50))
+            .background(Color(0xFFFF4D4F))
+            .border(1.2.dp, MaterialTheme.colorScheme.surface, RoundedCornerShape(50))
+            .padding(horizontal = if (wide) 3.5.dp else 0.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text,
+            color = Color.White,
+            fontSize = 9.5.sp,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+        )
+    }
+}
+

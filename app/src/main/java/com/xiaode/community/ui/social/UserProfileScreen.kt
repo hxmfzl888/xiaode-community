@@ -201,6 +201,35 @@ fun UserProfileScreen(nav: NavController, userId: Int) {
                                             ) { Text("VIP", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color.White) }
                                         }
                                     }
+                                    // UID_SHOW_V1: 显示 8 位 UID（可长按复制）
+                                    if (usr.uid.isNotBlank()) {
+                                        Spacer(Modifier.height(5.dp))
+                                        val clipCtx = androidx.compose.ui.platform.LocalContext.current
+                                        Box(
+                                            Modifier
+                                                .clip(RoundedCornerShape(50))
+                                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.09f))
+                                                .clickable {
+                                                    try {
+                                                        val cm = clipCtx.getSystemService(
+                                                            android.content.Context.CLIPBOARD_SERVICE
+                                                        ) as android.content.ClipboardManager
+                                                        cm.setPrimaryClip(
+                                                            android.content.ClipData.newPlainText("UID", usr.uid)
+                                                        )
+                                                        android.widget.Toast.makeText(clipCtx, "UID 已复制", android.widget.Toast.LENGTH_SHORT).show()
+                                                    } catch (_: Throwable) {}
+                                                }
+                                                .padding(horizontal = 8.dp, vertical = 2.dp),
+                                        ) {
+                                            Text(
+                                                "UID " + usr.uid,
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Medium,
+                                                color = MaterialTheme.colorScheme.primary,
+                                            )
+                                        }
+                                    }
                                     if (usr.bio.isNotBlank()) {
                                         Spacer(Modifier.height(5.dp))
                                         Box(
