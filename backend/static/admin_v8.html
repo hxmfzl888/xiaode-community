@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>小德审核端</title>
+<style>
+body{font-family:sans-serif;margin:0;padding:16px;background:#f4f6fb;color:#1f2430}
+.card{background:#fff;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+input,select{padding:8px 10px;border:1px solid #d6dcea;border-radius:8px}
+button{padding:8px 14px;border:0;border-radius:8px;background:#4a7dff;color:#fff;cursor:pointer;margin-right:6px}
+button.g{background:#eef1f8;color:#38415a}
+button.r{background:#ff5b5b}
+button.k{background:#22b573}
+.tag{display:inline-block;padding:2px 8px;border-radius:20px;font-size:12px}
+.pend{background:#fff3d6;color:#b8860b}
+.appr{background:#d9f7e8;color:#16885a}
+.rej{background:#ffe1e1;color:#d33}
+.item{border:1px solid #eef1f7;border-radius:10px;padding:12px;margin-bottom:10px}
+.muted{color:#9aa4b8;font-size:12px}
+.hide{display:none}
+.tabs button{margin-bottom:8px}
+.tabs button.on{background:#4a7dff;color:#fff}
+.tabs button{background:#eef1f8;color:#38415a}
+</style></head><body>
+<h1>小德社区 · 审核端</h1>
+<div class="muted" style="margin-bottom:12px">审核员专用（不显示昵称/头像）</div>
+<div class="card" id="loginCard">
+<input id="u" placeholder="审核员账号"/>
+<input id="p" type="password" placeholder="密码"/>
+<button id="loginBtn" type="button">登录</button>
+<div class="muted" style="margin-top:8px">使用管理员创建的审核员账号登录</div>
+</div>
+<div id="main" class="hide">
+<div style="display:flex;justify-content:space-between;margin-bottom:12px"><div>审核员：<b id="who">-</b></div><button class="g" onclick="logout()">退出</button></div>
+<div class="tabs">
+<button id="t0" class="on" onclick="showTab(0)">概览</button>
+<button id="t1" onclick="showTab(1)">帖子审核</button>
+<button id="t2" onclick="showTab(2)">应用审核</button>
+<button id="t3" onclick="showTab(3)">频道</button>
+<button id="t4" onclick="showTab(4)">举报</button>
+</div>
+<div class="card" id="pane0"><div id="statsBox" style="font-size:15px"></div></div>
+<div class="card hide" id="pane1">
+<select id="mSt" onchange="loadMoments()"><option value="pending">待审核</option><option value="approved">已通过</option><option value="rejected">已驳回</option><option value="">全部</option></select>
+<button class="g" onclick="loadMoments()">刷新</button>
+<div id="mList" style="margin-top:12px"></div></div>
+<div class="card hide" id="pane2">
+<select id="aSt" onchange="loadApps()"><option value="pending">待审核</option><option value="approved">已通过</option><option value="rejected">已驳回</option><option value="">全部</option></select>
+<button class="g" onclick="loadApps()">刷新</button>
+<div id="aList" style="margin-top:12px"></div></div>
+<div class="card hide" id="pane3"><button class="g" onclick="loadChannels()">刷新</button><div id="cList" style="margin-top:12px"></div></div>
+<div class="card hide" id="pane4">
+<select id="rSt" onchange="loadReports()"><option value="pending">待处理</option><option value="handled">已处理</option><option value="dismissed">已忽略</option><option value="">全部</option></select>
+<button class="g" onclick="loadReports()">刷新</button>
+<div id="rList" style="margin-top:12px"></div></div>
+</div>
+<div id="toast" style="position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:#1f2430;color:#fff;padding:10px 18px;border-radius:8px;display:none"></div>
+<script>
+var TK=localStorage.getItem("rvtk")||"";
+function tt(m){var t=document.getElementById("toast");t.textContent=m;t.style.display="block";setTimeout(function(){t.style.display="none"},1800);}
+async function rq(p,o){o=o||{};o.headers=o.headers||{};if(TK)o.headers["Authorization"]="Bearer "+TK;if(o.body)o.headers["Content-Type"]="application/json";var r=await fetch(p,o);var x=await r.text();var d;try{d=x?JSON.parse(x):{}}catch(e){d={detail:x}}if(!r.ok)throw new Error(d.detail||r.status);return d;}
+function esc(s){return String(s||"").replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c];});}
+function stx(s){return s==="pending"?"待审":s==="approved"?"已通过":s==="rejected"?"已驳回":s;}
+function tg(s){var c=s==="pending"?"pend":(s==="approved"?"appr":"rej");return "<span class=tag "+c+">"+stx(s)+"</span>";}
+async function login(){var u=document.getElementById("u").value.trim();var p=document.getElementById("p").value;if(!u||!p)return tt("请输入账号密码");try{var d=await rq("/api/reviewer/login",{method:"POST",body:JSON.stringify({username:u,password:p})});TK=d.access_token||d.token;localStorage.setItem("rvtk",TK);enter();}catch(e){tt("登录失败:"+e.message);}}
+async function enter(){try{var me=await rq("/api/reviewer/me");document.getElementById("loginCard").classList.add("hide");document.getElementById("main").classList.remove("hide");document.getElementById("who").textContent=me.nickname||me.username;loadStats();}catch(e){TK="";localStorage.removeItem("rvtk");document.getElementById("loginCard").classList.remove("hide");document.getElementById("main").classList.add("hide");tt("请重新登录");}}
+function logout(){TK="";localStorage.removeItem("rvtk");location.reload();}
+function showTab(n){for(var i=0;i<5;i++){document.getElementById("pane"+i).classList.toggle("hide",i!==n);document.getElementById("t"+i).classList.toggle("on",i===n);}if(n===0)loadStats();if(n===1)loadMoments();if(n===2)loadApps();if(n===3)loadChannels();if(n===4)loadReports();}
+async function loadStats(){try{var s=await rq("/api/reviewer/stats");document.getElementById("statsBox").innerHTML="待审帖子: <b>"+s.moment_pending+"</b> ｜ 待审应用: <b>"+s.app_pending+"</b> ｜ 待处理举报: <b>"+s.report_pending+"</b>";}catch(e){}}
+async function loadMoments(){var st=document.getElementById("mSt").value;try{var l=await rq("/api/reviewer/moments?st="+st);var el=document.getElementById("mList");if(!l.length){el.innerHTML="<div class=muted>暂无</div>";return;}el.innerHTML=l.map(function(m){var im=(m.images||[]).map(function(u){return "<img src=\\""+u+"\\" style=\\"width:60px;height:60px;object-fit:cover;border-radius:8px;margin-right:6px\\"/>";}).join("");return "<div class=item><div class=muted>#"+m.id+" · "+m.created_at+" · 用户ID:"+m.author_id+" "+tg(m.status)+"</div><div style=\\"font-weight:600\\">"+esc(m.title||"(无标题)")+"</div><div>"+esc(m.content||"")+"</div>"+im+"<div style=margin-top:8px>"+(m.status==="pending"?"<button class=k onclick=\\"rvM("+m.id+",1)\\">通过</button><button class=r onclick=\\"rvM("+m.id+",0)\\">驳回</button>":"")+"</div></div>";}).join("");}catch(e){tt(e.message);}}
+async function rvM(id,ok){try{await rq("/api/reviewer/moments/"+id+"/review",{method:"POST",body:JSON.stringify({approve:ok?true:false})});tt(ok?"已通过":"已驳回");loadMoments();loadStats();}catch(e){tt(e.message);}}
+async function loadApps(){var st=document.getElementById("aSt").value;try{var l=await rq("/api/reviewer/apps?st="+st);var el=document.getElementById("aList");if(!l.length){el.innerHTML="<div class=muted>暂无</div>";return;}el.innerHTML=l.map(function(a){return "<div class=item><div class=muted>#"+a.id+" · 上传者ID:"+a.author_id+" "+tg(a.status)+"</div><div style=\\"font-weight:600\\">"+esc(a.name)+" <span class=muted>"+esc(a.version||"")+"</span></div><div class=muted>"+esc(a.package_name||"")+"</div><div>"+esc(a.summary||"")+"</div><div style=margin-top:8px>"+(a.status==="pending"?"<button class=k onclick=\\"rvA("+a.id+",1)\\">通过</button><button class=r onclick=\\"rvA("+a.id+",0)\\">驳回</button>":"")+"</div></div>";}).join("");}catch(e){tt(e.message);}}
+async function rvA(id,ok){var rs="";if(!ok)rs=prompt("驳回原因(可空)")||"";try{await rq("/api/reviewer/apps/"+id+"/review",{method:"POST",body:JSON.stringify({approve:ok?true:false,reason:rs})});tt(ok?"已通过":"已驳回");loadApps();loadStats();}catch(e){tt(e.message);}}
+async function loadChannels(){try{var l=await rq("/api/reviewer/channels");var el=document.getElementById("cList");if(!l.length){el.innerHTML="<div class=muted>暂无频道</div>";return;}el.innerHTML=l.map(function(c){return "<div class=item><div style=\\"font-weight:600\\">"+esc(c.name)+" <span class=muted>#"+c.id+"</span></div><div class=muted>"+esc(c.desc||"")+"</div><div style=margin-top:8px><button class=r onclick=\\"delC("+c.id+")\\">删除</button></div></div>";}).join("");}catch(e){tt(e.message);}}
+async function delC(id){if(!confirm("确认删除该频道?"))return;try{await rq("/api/reviewer/channels/"+id,{method:"DELETE"});tt("已删除");loadChannels();}catch(e){tt(e.message);}}
+async function loadReports(){var st=document.getElementById("rSt").value;try{var l=await rq("/api/reviewer/reports?st="+st);var el=document.getElementById("rList");if(!l.length){el.innerHTML="<div class=muted>暂无举报</div>";return;}el.innerHTML=l.map(function(r){return "<div class=item><div class=muted>#"+r.id+" · "+r.created_at+" · 类型:"+r.target_type+" · 目标ID:"+r.target_id+" · 举报者ID:"+r.reporter_id+" "+tg(r.status)+"</div><div style=\\"font-weight:600\\">"+esc(r.reason)+"</div>"+(r.snapshot?"<div class=muted>内容:"+esc(r.snapshot)+"</div>":"")+(r.detail?"<div>"+esc(r.detail)+"</div>":"")+"<div style=margin-top:8px>"+(r.status==="pending"?"<button class=k onclick=\\"hR("+r.id+",\\\"handle\\\",1)\\">处理并下架</button><button class=g onclick=\\"hR("+r.id+",\\\"handle\\\",0)\\">标记已处理</button><button class=g onclick=\\"hR("+r.id+",\\\"dismiss\\\",0)\\">忽略</button>":"")+"</div></div>";}).join("");}catch(e){tt(e.message);}}
+async function hR(id,act,rm){try{await rq("/api/reviewer/reports/"+id+"/handle",{method:"POST",body:JSON.stringify({action:act,remove:rm})});tt("已处理");loadReports();loadStats();}catch(e){tt(e.message);}}
+if(TK){enter().catch(function(){});}
+(function(){var b=document.getElementById("loginBtn");if(!b){b=document.querySelector("#loginCard button");}if(!b){document.title="ERR:no-btn";return;}b.setAttribute("id","loginBtn");b.addEventListener("click",function(ev){ev.preventDefault();b.disabled=true;b.textContent="登录中...";try{Promise.resolve().then(function(){return login();}).catch(function(err){tt("按钮异常:"+(err&&err.message||err));}).finally(function(){setTimeout(function(){b.disabled=false;b.textContent="登录";},900);});}catch(e){tt("异常:"+e.message);}});})();
+
+</script>
+</body></html>

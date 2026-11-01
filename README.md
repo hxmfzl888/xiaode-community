@@ -1,18 +1,16 @@
 <div align="center">
 
-# 小德社区 Xiaode Community
+# 小德社区
 
-**一个轻量、干净的 Android 社区客户端**
+**一个轻量、干净的社区平台 · Android 客户端 + FastAPI 后端全栈开源**
 
-发帖 · 看图 · 聊天 · 账号体系 · 多端同步
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Android](https://img.shields.io/badge/Android-7.0%2B-green.svg)](https://developer.android.com)
+[![Kotlin](https://img.shields.io/badge/Kotlin-1.9.22-purple.svg)](https://kotlinlang.org)
+[![Compose](https://img.shields.io/badge/Compose-BOM%202024.02-orange.svg)](https://developer.android.com/jetpack/compose)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115-teal.svg)](https://fastapi.tiangolo.com)
 
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
-[![Kotlin](https://img.shields.io/badge/Kotlin-1.9.22-7F52FF.svg)](https://kotlinlang.org)
-[![Compose](https://img.shields.io/badge/Jetpack%20Compose-BOM-4285F4.svg)](https://developer.android.com/jetpack/compose)
-[![Android](https://img.shields.io/badge/Android-5.0%2B%20(API%2024)-3DDC84.svg)](https://developer.android.com)
-[![Version](https://img.shields.io/badge/version-2.5.2-brightgreen.svg)](https://delai.fun)
-
-[官网](https://delai.fun) · [下载 APK](https://delai.fun/download/小德社区_2.5.2.apk) · [问题反馈](https://github.com/hxmfzl888/xiaode-community/issues)
+[官网](https://delai.fun) · [下载 APK](https://delai.fun/download/小德社区_2.8.1.apk) · [问题反馈](https://github.com/hxmfzl888/xiaode-community/issues)
 
 </div>
 
@@ -20,312 +18,288 @@
 
 ## 项目简介
 
-小德社区是一个由**个人开发者独立运营**的轻量级 Android 社区客户端。项目最初为了解决"想要一个干净、不臃肿、无广告的社区 App"这个简单需求，从零开始用 Kotlin + Jetpack Compose 构建。
+小德社区是一个完整可运行的社区平台，包含 **Android 客户端** 与 **FastAPI 后端服务**，两端代码全部开源。
 
-现在将客户端代码**完全开源**，希望能给同样想做独立社区的朋友一点参考，也欢迎一起把它做得更好。
+不是 Demo，不是脚手架 —— 是真实运营中的产品代码，包含账号体系、内容审核、金币经济、会员体系等完整业务逻辑。
 
-### 有什么不一样
+### 核心特性
 
-- **真正轻量** — 单 APK 约 12MB，无第三方 SDK 堆砌，无广告
-- **全 Compose 实现** — 100% Jetpack Compose，无 XML 布局，UI 代码即文档
-- **完整功能闭环** — 不只是 Demo，包含发帖、评论、点赞、私信、频道、审核、会员等完整业务
-- **审核端独立** — 审核员使用独立账号体系，内容匿名化处理
-- **无追踪** — 不接入任何统计或行为分析 SDK
+**客户端**
+- Jetpack Compose 全量实现，零 XML 布局
+- Material 3 + 液态玻璃视觉风格
+- 6 个主 Tab：广场 / 应用 / 资源 / 小德 / 消息 / 我的
+- 头像自由裁剪（拖拽 + 双指缩放）
+- 扫码登录、个人二维码
+- 本地预置 AI 问答（离线秒回）
+- 深色模式、宋体字体支持
 
----
-
-## 功能特性
-
-<table>
-<tr>
-<td width="50%" valign="top">
-
-### 社区核心
-- 📝 **发帖** — 支持图文、多图、视频、代码块（语法高亮）
-- 🏷️ **标签分类** — 教程 / 求助 / 分享 / 讨论
-- 💬 **评论** — 多级回复、评论点赞
-- ❤️ **点赞** — 帖子与评论均支持
-- 🔍 **搜索** — 帖子、用户、频道全文检索
-
-### 频道与社交
-- 📢 **频道** — 自建频道、成员管理、频道内发帖
-- 👥 **关注** — 关注用户、好友体系
-- 💌 **私信** — 单聊、群聊、消息置顶、黑名单
-- 🔔 **通知** — 点赞/评论/回复/关注/审核结果实时推送
-
-</td>
-<td width="50%" valign="top">
-
-### 账号与成长
-- 🔐 **账号体系** — 注册/登录/找回密码（邮箱验证码）
-- 👤 **个人主页** — 头像、昵称、简介、等级、经验值
-- 🏆 **等级系统** — 发帖/评论/登录获得经验升级
-- 💰 **金币系统** — 打赏、兑换、余额明细
-- 👑 **会员** — 会员专属功能（视频、自定义装扮）
-
-### 内容安全
-- 🛡️ **审核机制** — 发帖先审后发，审核员独立后台
-- 🚨 **举报系统** — 用户举报 → 审核员处理
-- ⛔ **封禁** — 支持限时/永久封禁、一键下架违规内容
-- 📜 **用户协议** — 内置免责声明与用户规范
-
-</td>
-</tr>
-</table>
+**后端**
+- 28 个业务路由模块，9,300+ 行 Python
+- JWT 鉴权（HS256，30 天有效期）
+- bcrypt 密码哈希
+- 内容先审后发（帖子 / 应用 / 资源 / 评论）
+- 推荐算法：关注优先 + 热度加权
+- 金币经济系统 + VIP 会员 + 任务中心
+- 邮件验证码（SMTP）
+- 完整管理后台（含 Android 4.4 兼容精简版）
 
 ---
 
 ## 技术栈
 
-| 层次 | 技术选型 |
+### 客户端
+
+| 组件 | 技术 |
 |---|---|
-| **语言** | Kotlin 1.9.22 |
-| **UI** | Jetpack Compose（Material 3） |
-| **架构** | MVVM + Repository |
-| **网络** | Retrofit 2 + OkHttp 3 + Gson |
-| **图片** | Coil（Compose 原生支持） |
-| **本地存储** | SharedPreferences（Token / 多账号） |
-| **异步** | Kotlin Coroutines + Flow |
-| **导航** | Navigation Compose |
-| **最低支持** | Android 5.0（API 24） |
-| **目标版本** | Android 14（API 34） |
+| 语言 | Kotlin 1.9.22 |
+| UI | Jetpack Compose（BOM 2024.02.01）+ Material 3 |
+| 架构 | MVVM + Repository |
+| 网络 | Retrofit 2 + OkHttp 3 + Gson |
+| 图片 | Coil |
+| 二维码 | ZXing core 3.5.3 |
+| 相机 | CameraX 1.3.1 |
+| SDK | minSdk 24 / targetSdk 34 / compileSdk 34 |
+| 构建 | Gradle 8.4 + AGP 8.2 |
 
-### 为什么选这套
+### 后端
 
-- **Compose 而非 XML**：17K 行代码几乎全是 Kotlin，UI 逻辑和业务逻辑在同一文件里，阅读和维护成本极低
-- **Retrofit + Gson**：纯 JVM 依赖，未来如果做桌面端可直接复用网络层
-- **不引入 Hilt/Koin**：项目规模下手动依赖注入足够，少一层魔法，新人上手更快
+| 组件 | 技术 |
+|---|---|
+| 语言 | Python 3.10 ~ 3.12 |
+| 框架 | FastAPI 0.115 |
+| ORM | SQLAlchemy 2.0 |
+| 数据库 | SQLite（可换 PostgreSQL）|
+| 鉴权 | python-jose（JWT HS256）|
+| 密码 | passlib + bcrypt |
+| 服务器 | uvicorn |
 
 ---
 
-## 项目结构
+## 目录结构
 
 ```
 xiaode-community/
-├── app/
-│   ├── build.gradle.kts
-│   ├── proguard-rules.pro
+├── app/                          # 📱 Android 客户端
 │   └── src/main/
-│       ├── AndroidManifest.xml
 │       ├── java/com/xiaode/community/
-│       │   ├── XiaodeApp.kt            # Application 入口
-│       │   ├── data/                   # 数据层
-│       │   │   ├── ApiClient.kt        # OkHttp + Retrofit 初始化
-│       │   │   ├── ApiService.kt       # 全部 API 接口定义
-│       │   │   ├── Models.kt           # 数据模型（DTO）
-│       │   │   ├── Repo.kt             # 仓库层 + 统一错误处理
-│       │   │   └── TokenStore.kt       # Token / 多账号持久化
-│       │   └── ui/                     # 界面层（全 Compose）
-│       │       ├── XiaodeRoot.kt       # 根导航
-│       │       ├── auth/               # 登录注册（两步式）
-│       │       ├── square/             # 广场、详情、发帖、搜索
-│       │       ├── chat/               # 私信、群聊
-│       │       ├── social/             # 个人主页、关注
-│       │       ├── mine/               # 我的、设置
-│       │       ├── appstore/           # 应用市场
-│       │       ├── resource/           # 资源库
-│       │       ├── theme/              # 主题、配色
-│       │       └── common/             # 通用组件
-│       └── res/                        # 图标、字符串、主题
-├── gradle/wrapper/
-├── build.gradle.kts
-├── settings.gradle.kts
-├── gradle.properties
-├── LICENSE
-└── README.md
+│       │   ├── data/             # 网络层、模型、仓库
+│       │   ├── ui/               # 界面
+│       │   │   ├── auth/         # 登录注册、启动页
+│       │   │   ├── square/       # 广场、帖子详情
+│       │   │   ├── appstore/     # 应用商店
+│       │   │   ├── resource/     # 资源库
+│       │   │   ├── chat/         # 私信、AI 助手
+│       │   │   ├── social/       # 个人主页、关注
+│       │   │   ├── mine/         # 我的、编辑资料
+│       │   │   ├── common/       # 通用组件
+│       │   │   └── theme/        # 主题、字体
+│       │   └── XiaodeRoot.kt     # 导航根
+│       └── res/                  # 资源文件
+│
+├── backend/                      # 🖥 FastAPI 后端
+│   ├── app/
+│   │   ├── main.py               # 主入口
+│   │   ├── models.py             # 数据模型
+│   │   ├── schemas.py            # Pydantic 模型
+│   │   ├── auth.py               # JWT + 密码
+│   │   ├── deps.py               # 鉴权依赖
+│   │   ├── database.py           # 数据库连接
+│   │   └── routers/              # 28 个路由模块
+│   ├── static/                   # 管理后台页面
+│   ├── requirements.txt
+│   ├── .env.example
+│   └── run.sh
+│
+├── BUILD.md                      # 详细部署教程
+├── DISCLAIMER.md                 # 免责声明
+└── LICENSE                       # MIT
 ```
 
 ---
 
 ## 快速开始
 
-### 环境要求
-
-- **JDK 17**（必需，Compose Compiler 要求）
-- **Android SDK**（compileSdk 34）
-- **Android Studio** Hedgehog (2023.1.1) 或更新版本
-- 磁盘空间 ≥ 5GB（Gradle 缓存 + SDK）
-
-### 克隆与构建
+### 一、后端
 
 ```bash
-git clone https://github.com/hxmfzl888/xiaode-community.git
-cd xiaode-community
+cd backend
+
+# 1. 创建虚拟环境
+python3 -m venv venv
+source venv/bin/activate
+
+# 2. 安装依赖
+pip install -r requirements.txt
+
+# 3. 配置环境变量
+cp .env.example .env
+# 编辑 .env，至少填写 XIAODE_SECRET_KEY
+python3 -c "import secrets;print(secrets.token_urlsafe(48))"   # 生成密钥
+
+# 4. 启动
+bash run.sh
+# 或前台：uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-配置 Android SDK 路径（**必需**，该文件已被 gitignore）：
+启动后访问 **http://127.0.0.1:8000/docs** 查看自动生成的 API 文档。
+
+> 数据库首次启动自动创建，无需手动建表。
+
+### 二、客户端
 
 ```bash
-# 方式 A：Android Studio 打开项目会自动生成
-# 方式 B：手动创建
-echo "sdk.dir=/path/to/your/Android/Sdk" > local.properties
-```
+# 1. 确认 SDK 路径
+echo "sdk.dir=/path/to/android-sdk" > local.properties
 
-构建 Debug 版本：
-
-```bash
+# 2. 编译 Debug 包
 ./gradlew assembleDebug
+
+# 3. 安装
+adb install app/build/outputs/apk/debug/app-debug.apk
 ```
 
-产物位置：`app/build/outputs/apk/debug/app-debug.apk`
+**如果你的后端不在本机**，修改 `app/src/main/java/com/xiaode/community/data/ApiService.kt` 里的 `BASE_URL`。
 
-### 配置后端地址
-
-客户端默认连接官方服务器。如需指向自己的实例，修改：
-
-```kotlin
-// app/src/main/java/com/xiaode/community/data/ApiClient.kt
-
-object ApiClient {
-    const val BASE_URL = "https://api.delai.fun/"   // ← 改成你的后端地址
-    const val MEDIA_BASE = "https://api.delai.fun/" // ← 图片/媒体地址
-}
-```
-
-> ⚠️ **注意**：本项目只开源了 **Android 客户端**，后端服务端代码未包含在此仓库中。自行搭建需要实现与 `ApiService.kt` 中定义一致的 REST 接口。
-
-### 签名发版（可选）
-
-Debug 构建开箱即用。若要打 Release 包，需要自己的密钥库：
+**要打正式包**，需要自己生成签名：
 
 ```bash
-# 1. 生成 keystore
-keytool -genkey -v -keystore xiaode.keystore -alias xiaode \
-        -keyalg RSA -keysize 2048 -validity 10000
-
-# 2. 配置密码（不要写进 gradle.properties 后提交！）
-#    推荐放在 ~/.gradle/gradle.properties
-echo "XIAODE_STORE_PASSWORD=你的密码" >> ~/.gradle/gradle.properties
-echo "XIAODE_KEY_PASSWORD=你的密码"   >> ~/.gradle/gradle.properties
-
-# 3. 构建
-./gradlew assembleRelease
+keytool -genkey -v -keystore my-release.jks -keyalg RSA \
+        -keysize 2048 -validity 10000 -alias mykey
 ```
+
+然后在 `app/build.gradle.kts` 中配置 `signingConfigs`。
 
 ---
 
-## 一些实现细节
+## 主要功能
 
-### 统一网络错误处理
+### 社区
+- 发帖（图文 / 视频 / 频道 / 标签）
+- 评论、回复、点赞、收藏
+- 关注 / 粉丝
+- 频道创建与加入
+- 全文搜索（帖子 / 频道 / 用户 / UID 精准匹配）
 
-`Repo.kt` 里的 `safeCall` 把 Retrofit 异常统一转成可读的中文提示，并解析 FastAPI 的 `detail` 字段：
+### 应用商店
+- APK 上传 / 外链
+- 应用详情、截图、分类
+- 下载统计、评论评分
 
-```kotlin
-suspend fun <T> safeCall(block: suspend () -> T): ApiResult<T> = 
-    withContext(Dispatchers.IO) {
-        try {
-            ApiResult.Ok(block())
-        } catch (e: HttpException) {
-            // 401 → "登录已过期"
-            // 403 → 后端 detail 或 "没有权限"
-            // ...
-        } catch (e: IOException) {
-            ApiResult.Err(-1, "网络连接失败，请检查网络")
-        }
-    }
-```
+### 资源库
+- 链接 / 文件两种形式
+- 付费资源（金币）
+- 打赏
 
-### 两步式登录 / 注册
+### 账号体系
+- 邮箱注册（QQ 号 + 域名快捷输入）
+- UID 8 位数字唯一 ID
+- 等级、经验、金币
+- VIP 会员
+- 每日签到、任务中心
+- 兑换码
 
-登录不是直接进主页，而是先弹「确认页」展示头像昵称简介：
+### 内容安全
+- **先审后发**：帖子 / 应用 / 资源 / 评论全部需审核
+- 举报系统（帖子 / 评论 / 用户）
+- 用户封禁
+- 审核员角色（可分配权限）
 
-```
-输入账号密码 → 点"下一步" → 确认页（头像/昵称/简介） → 点"确认登录"才真正登录
-```
-
-注册则是先建账号拿 token（因为头像上传接口需要鉴权），再进「完善资料页」填昵称/简介/头像。
-
-### Gson null 安全适配
-
-后端可能返回 `null` 而 Kotlin 声明是非空 `String`，会导致 NPE。`ApiClient` 里注册了全局 `TypeAdapter` 把 `null` 统一转成 `""`：
-
-```kotlin
-private val nullSafeStringAdapter = object : TypeAdapter<String>() {
-    override fun write(out: JsonWriter, value: String?) { out.value(value ?: "") }
-    // ...
-}
-```
-
-### 审核端匿名化
-
-审核员看到的帖子**只有用户 ID，没有昵称和头像**，避免审核员基于个人印象判断，也降低信息泄露风险。
+### 管理后台
+- `/admin` — 完整版（需 Chrome 55+）
+- `/admin/lite` — 精简版（**兼容 Android 4.4**，帖子 / 应用 / 资源 / 举报四合一）
+- `/reviewer` — 审核员专用
 
 ---
 
-## 参与贡献
+## API 概览
 
-欢迎任何形式的贡献！无论是 bug 报告、功能建议还是代码 PR。
+| 模块 | 路径前缀 | 说明 |
+|---|---|---|
+| 认证 | `/api/auth` | 注册、登录、验证码、找回密码 |
+| 帖子 | `/api/moments` | 发帖、列表、详情、点赞、收藏 |
+| 评论 | `/api/moments/{id}/comments` | 评论、回复 |
+| 应用 | `/api/apps` | 应用列表、详情、下载 |
+| 资源 | `/api/resources` | 资源列表、详情 |
+| 用户 | `/api/users` | 个人主页、编辑资料 |
+| 社交 | `/api/social` | 关注、粉丝、动态 |
+| 搜索 | `/api/search` | 综合搜索 |
+| 私信 | `/api/chat` | 会话、消息 |
+| 金币 | `/api/coins` | 余额、流水、兑换 |
+| VIP | `/api/vip` | 套餐、开通 |
+| 任务 | `/api/task` | 每日任务、签到 |
+| 通知 | `/api/notifications` | 消息通知 |
+| 审核 | `/api/admin` | 后台管理接口 |
+| 扫码 | `/api/qr` | 扫码登录 |
 
-### 提交 Issue
+完整文档见运行后的 `/docs`（Swagger UI）。
 
-- 🐛 **Bug 报告**：请说明复现步骤、设备型号、Android 版本、App 版本
-- 💡 **功能建议**：说明使用场景和期望效果
-- ❓ **使用问题**：优先在 [Discussions](https://github.com/hxmfzl888/xiaode-community/discussions) 提问
+---
 
-### 提交 PR
+## 数据库
 
-```bash
-# 1. Fork 本仓库
+默认 SQLite，单文件 `xiaode.db`，首次启动自动建表。
 
-# 2. 创建分支（命名建议）
-git checkout -b feat/your-feature      # 新功能
-git checkout -b fix/your-bugfix        # 修 bug
+主要表：
 
-# 3. 提交前请确认
-./gradlew assembleDebug                 # 能编译通过
-# 不要提交 build/、.idea/、local.properties、*.keystore
-
-# 4. 提交并按模板填写 PR 说明
+```
+users              用户
+moments            帖子
+comments           评论
+moment_likes       点赞
+moment_favorites   收藏
+apps              应用
+resources         资源
+channels          频道
+friendships       关注关系
+notifications     通知
+reports           举报
+coin_accounts     金币账户
+coin_logs         金币流水
+vip_orders        VIP 订单
+tasks             任务
 ```
 
-**代码风格**：遵循 [Kotlin 官方编码规范](https://kotlinlang.org/docs/coding-conventions.html)，提交前请格式化。
+**换 PostgreSQL**：修改 `.env` 里的 `DATABASE_URL` 即可，SQLAlchemy 自动适配。
+
+---
+
+## 贡献
+
+欢迎提交 Issue 和 Pull Request。
+
+1. Fork 本仓库
+2. 创建分支 `git checkout -b feature/your-feature`
+3. 提交改动 `git commit -m "feat: 你的功能"`
+4. 推送 `git push origin feature/your-feature`
+5. 发起 Pull Request
+
+**提交信息规范**：`feat:` 新功能 / `fix:` 修复 / `docs:` 文档 / `refactor:` 重构 / `style:` 格式
 
 ---
 
 ## 免责声明
 
-> ⚠️ **本项目仅供学习和技术交流使用。**
+本项目仅供**学习与技术交流**使用。
 
-- 使用本项目搭建的任何实例，其内容由实例运营者自行负责，与原作者无关
-- 请遵守当地法律法规，不得发布违法违规内容
-- 项目内置《用户规范与免责声明》，使用者需同意后方可使用
-- 作者不对因使用本项目产生的任何直接或间接损失承担责任
+- 使用者需自行承担部署与运营的全部责任
+- 请遵守当地法律法规，不得用于违法用途
+- 严禁发布违法违规、侵犯他人权益的内容
+- 作者不对使用本项目产生的任何后果负责
 
-详见 [DISCLAIMER.md](DISCLAIMER.md)。
+详见 [DISCLAIMER.md](DISCLAIMER.md)
 
 ---
 
 ## 许可证
 
-本项目采用 [Apache License 2.0](LICENSE) 开源协议。
-
-```
-Copyright 2026 hxmfzl888
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-```
-
-你可以自由地使用、修改、分发本项目（包括商业用途），但需保留版权声明和许可证文件。
-
----
-
-## 致谢
-
-- [Jetpack Compose](https://developer.android.com/jetpack/compose) — 让 UI 开发重新变得愉快
-- [Retrofit](https://square.github.io/retrofit/) / [OkHttp](https://square.github.io/okhttp/) — 稳定可靠的网络层
-- [Coil](https://coil-kt.github.io/coil/) — 轻量好用的 Compose 图片加载
-- 以及所有提出建议和反馈的用户
+[MIT License](LICENSE) — 可自由使用、修改、商用，无需署名。
 
 ---
 
 <div align="center">
 
-**如果这个项目对你有帮助，欢迎点个 ⭐ Star**
+**如果这个项目对你有帮助，点个 ⭐ 支持一下**
 
-Made with ❤️ by 个人开发者
+[官网](https://delai.fun) · [下载](https://delai.fun) · [Issues](https://github.com/hxmfzl888/xiaode-community/issues)
 
 </div>

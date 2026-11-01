@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>小德社区 · 主后台</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+         background: #f4f6fb; color: #1f2430; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 18px; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .sub { color: #7a869a; font-size: 13px; margin-bottom: 16px; }
+  .card { background: #fff; border-radius: 12px; padding: 16px; margin-bottom: 16px;
+          box-shadow: 0 1px 4px rgba(20,30,60,.08); }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  input, textarea, select { padding: 9px 11px; border: 1px solid #d6dcea; border-radius: 8px;
+          font-size: 14px; outline: none; font-family: inherit; }
+  input:focus, textarea:focus, select:focus { border-color: #4a7dff; }
+  input { width: 180px; }
+  textarea { width: 100%; min-height: 70px; resize: vertical; }
+  button { padding: 9px 16px; border: 0; border-radius: 8px; background: #4a7dff; color: #fff;
+           font-size: 14px; cursor: pointer; }
+  button:hover { background: #3a6ae8; }
+  button.ghost { background: #eef1f8; color: #38415a; }
+  button.danger { background: #ff5b5b; }
+  button.ok { background: #22b573; }
+  button.sm { padding: 5px 10px; font-size: 12px; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
+  .stat { background: #f7f9ff; border-radius: 10px; padding: 12px; text-align: center; }
+  .stat b { display: block; font-size: 22px; color: #4a7dff; }
+  .stat span { font-size: 12px; color: #7a869a; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 9px 8px; border-bottom: 1px solid #eef1f7; }
+  th { color: #7a869a; font-weight: 600; }
+  img.av { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; background: #e7ecf6; }
+  img.pic { width: 62px; height: 62px; border-radius: 8px; object-fit: cover; margin-right: 6px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 12px; }
+  .tag.pending { background: #fff3d6; color: #b8860b; }
+  .tag.approved { background: #d9f7e8; color: #16885a; }
+  .tag.rejected { background: #ffe1e1; color: #d33; }
+  .muted { color: #9aa4b8; font-size: 12px; }
+  .hide { display: none; }
+  .toast { position: fixed; left: 50%; bottom: 30px; transform: translateX(-50%);
+           background: #1f2430; color: #fff; padding: 10px 18px; border-radius: 8px;
+           font-size: 14px; opacity: 0; transition: .3s; pointer-events: none; z-index: 99; }
+  .toast.show { opacity: 1; }
+  .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+  .tabs button { background: #eef1f8; color: #38415a; }
+  .tabs button.active { background: #4a7dff; color: #fff; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>小德社区 · 主后台</h1>
+  <div class="sub">云汇智联数字科技 · 主后台：用户 / 动态审核 / 频道审核 / 公告 / 聊天管理</div>
+
+  <!-- 登录 -->
+  <div class="card" id="loginCard">
+    <div class="row">
+      <input id="username" placeholder="管理员账号" />
+      <input id="password" type="password" placeholder="密码" />
+      <button onclick="login()">登录</button>
+    </div>
+    <div class="muted" style="margin-top:8px">先用普通账号登录，再由已存在的管理员把你设为管理员；或直接改库置 is_admin=1。</div>
+  </div>
+
+  <!-- 主界面 -->
+  <div id="main" class="hide">
+    <div class="row" style="justify-content:space-between; margin-bottom:14px">
+      <div>当前管理员：<b id="whoami">-</b></div>
+      <button class="ghost" onclick="logout()">退出登录</button>
+    </div>
+
+    <div class="tabs">
+      <button id="tab-stats" class="active" onclick="showTab('stats')">概览</button>
+      <button id="tab-users" onclick="showTab('users')">用户</button>
+      <button id="tab-moments" onclick="showTab('moments')">动态审核</button>
+      <button id="tab-channels" onclick="showTab('channels')">频道审核</button>
+      <button id="tab-ann" onclick="showTab('ann')">公告</button>
+      <button id="tab-version" onclick="showTab('version')">版本管理</button>
+      <button id="tab-ads" onclick="showTab('ads')">广告管理</button>
+      <button id="tab-apps" onclick="showTab('apps')">应用管理</button>
+      <button id="tab-reports" onclick="showTab('reports')">举报管理</button>
+    </div>
+
+    <!-- 概览 -->
+    <div class="card" id="pane-stats">
+      <div class="stats" id="statsBox"></div>
+    </div>
+
+    <!-- 用户 -->
+    <div class="card hide" id="pane-users">
+      <div class="row" style="margin-bottom:12px">
+        <input id="userKw" placeholder="搜索用户名/昵称" />
+        <button onclick="loadUsers()">搜索</button>
+        <button class="ghost" onclick="document.getElementById('userKw').value='';loadUsers()">重置</button>
+      </div>
+      <table>
+        <thead><tr><th>ID</th><th>头像</th><th>用户名</th><th>昵称</th><th>管理员</th><th>操作</th></tr></thead>
+        <tbody id="userRows"></tbody>
+      </table>
+    </div>
+
+    <!-- 动态审核 -->
+    <div class="card hide" id="pane-moments">
+      <div class="row" style="margin-bottom:12px">
+        <select id="mStatus" onchange="loadMoments()">
+          <option value="pending">待审核</option>
+          <option value="approved">已通过</option>
+          <option value="rejected">已驳回</option>
+          <option value="">全部</option>
+        </select>
+        <button class="ghost" onclick="loadMoments()">刷新</button>
+      </div>
+      <div id="momentList"></div>
+    </div>
+
+    <!-- 频道审核 -->
+    <div class="card hide" id="pane-channels">
+      <div class="row" style="margin-bottom:12px">
+        <select id="chStatus" onchange="loadChannels()">
+          <option value="pending">待审核</option>
+          <option value="approved">已通过</option>
+          <option value="rejected">已驳回</option>
+        </select>
+        <button class="ghost" onclick="loadChannels()">刷新</button>
+      </div>
+      <div id="channelList"></div>
+    </div>
+    <!-- 版本管理 -->
+    <div class="card hide" id="pane-version">
+      <div class="muted" style="margin-bottom:10px">用于配置 App「检查更新 / 强制更新」策略。App 启动时会请求 /api/app/version</div>
+      <div class="row" style="margin-bottom:8px"><span style="width:120px">最新版本号</span>
+        <input id="vLatest" placeholder="如 7.1.0" style="width:200px" /></div>
+      <div class="row" style="margin-bottom:8px"><span style="width:120px">最低要求版本</span>
+        <input id="vMin" placeholder="低于此版本将强制更新" style="width:200px" /></div>
+      <div class="row" style="margin-bottom:8px"><span style="width:120px">强制更新开关</span>
+        <select id="vForce" style="width:200px"><option value="false">非强制（可稍后）</option><option value="true">强制更新</option></select></div>
+      <div class="row" style="margin-bottom:8px"><span style="width:120px">下载地址</span>
+        <input id="vUrl" placeholder="https://delai.fun/xxx.apk" style="width:320px" /></div>
+      <div style="margin:8px 0 4px">更新说明</div>
+      <textarea id="vLog" placeholder="本次更新内容..."></textarea>
+      <div style="margin:8px 0 4px">提示语（非强制时显示）</div>
+      <input id="vNotice" placeholder="有新版本可用，建议更新" style="width:100%;margin-bottom:10px" />
+      <div class="row"><button onclick="saveVersion()">保存配置</button>
+        <button class="ghost" onclick="loadVersion()">刷新</button></div>
+    </div>
+    <!-- 公告 -->
+    <div class="card hide" id="pane-ann">
+      <div class="row" style="margin-bottom:10px">
+        <input id="annTitle" placeholder="公告标题" style="width:260px" />
+      </div>
+      <textarea id="annContent" placeholder="公告内容"></textarea>
+      <div class="row" style="margin-top:10px">
+        <button onclick="createAnn()">发布公告</button>
+      </div>
+      <div id="annList" style="margin-top:16px"></div>
+    </div>
+    <!-- 聊天管理 -->
+    <!-- 广告管理 -->
+    <div class="card hide" id="pane-ads">
+      <div class="muted" style="margin-bottom:10px">广场顶部广告位。上传图片 + 填跳转网址 + 排序（越小越前）+ 启用停用。App 进广场自动拉取。</div>
+      <div class="row" style="margin-bottom:10px;flex-wrap:wrap;gap:8px;align-items:center">
+        <input id="adTitle" placeholder="标题(可不填)" style="width:160px" />
+        <input id="adLink" placeholder="跳转网址 http://..." style="width:260px" />
+        <input id="adSort" type="number" value="0" style="width:70px" />
+        <input id="adFile" type="file" accept="image/*" />
+        <button onclick="createAd()">添加广告</button>
+        <button class="ghost" onclick="loadAds()">刷新</button>
+      </div>
+      <div id="adList"></div>
+    </div>
+
+    <!-- 应用管理 -->
+    <div class="card hide" id="pane-apps">
+      <div class="row" style="margin-bottom:12px">
+        <select id="appStatus" onchange="loadApps()">
+          <option value="pending">待审核</option>
+          <option value="approved">已通过</option>
+          <option value="rejected">已驳回</option>
+        </select>
+        <button class="ghost" onclick="loadApps()">刷新</button>
+      </div>
+      <div id="appList"></div>
+    </div>
+
+    <!-- 举报管理 -->
+    <div class="card hide" id="pane-reports">
+      <div class="row" style="margin-bottom:12px">
+        <select id="repStatus" onchange="loadReports()">
+          <option value="pending">待处理</option>
+          <option value="handled">已处理</option>
+          <option value="dismissed">已忽略</option>
+          <option value="">全部</option>
+        </select>
+        <button class="ghost" onclick="loadReports()">刷新</button>
+      </div>
+      <div id="reportList"></div>
+    </div>
+    <div class="card hide" id="pane-chats">
+      <div class="row" style="margin-bottom:12px">
+        <input id="chatKw" placeholder="搜索消息内容" />
+        <button onclick="loadChats()">搜索</button>
+        <button class="ghost" onclick="document.getElementById('chatKw').value='';loadChats()">重置</button>
+        <button class="ghost" onclick="clearChats()" style="color:#e5484d">清空全部聊天</button>
+      </div>
+      <div id="chatStats" class="muted" style="margin-bottom:10px"></div>
+      <table>
+        <thead><tr><th>ID</th><th>发送者</th><th>接收者</th><th>类型</th><th>内容</th><th>时间</th></tr></thead>
+        <tbody id="chatRows"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = "";
+let TOKEN = localStorage.getItem("xd_token") || "";
+
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 1800);
+}
+async function req(path, opts = {}) {
+  opts.headers = opts.headers || {};
+  if (TOKEN) opts.headers["Authorization"] = "Bearer " + TOKEN;
+  if (opts.body && !(opts.body instanceof FormData)) {
+    opts.headers["Content-Type"] = "application/json";
+  }
+  const r = await fetch(API + path, opts);
+  const text = await r.text();
+  let data;
+  try { data = text ? JSON.parse(text) : {}; } catch { data = { detail: text }; }
+  if (!r.ok) throw new Error(data.detail || ("HTTP " + r.status));
+  return data;
+}
+
+async function login() {
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value;
+  if (!username || !password) return toast("请输入账号和密码");
+  try {
+    const d = await req("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ username, password })
+    });
+    TOKEN = d.access_token || d.token;
+    localStorage.setItem("xd_token", TOKEN);
+    await enter();
+  } catch (e) { toast("登录失败：" + e.message); }
+}
+
+async function enter() {
+  try {
+    const me = await req("/api/auth/me");
+    if (!me.is_admin) { toast("该账号不是管理员"); logout(); return; }
+    document.getElementById("loginCard").classList.add("hide");
+    document.getElementById("main").classList.remove("hide");
+    document.getElementById("whoami").textContent = (me.nickname || me.username);
+    loadStats(); loadUsers(); loadMoments(); loadAnn();
+  } catch (e) { toast("登录态失效：" + e.message); logout(); }
+}
+function logout() {
+  TOKEN = ""; localStorage.removeItem("xd_token");
+  document.getElementById("main").classList.add("hide");
+  document.getElementById("loginCard").classList.remove("hide");
+}
+
+function showTab(name) {
+  ["stats", "users", "moments", "channels", "ann", "version", "chats", "ads", "apps", "reports"].forEach(k => {
+    const pane = document.getElementById("pane-" + k);
+    const tab = document.getElementById("tab-" + k);
+    if (pane) pane.classList.toggle("hide", k !== name);
+    if (tab) tab.classList.toggle("active", k === name);
+  });
+  if (name === "chats") loadChats();
+  if (name === "ads") loadAds();
+  if (name === "apps") loadApps();
+  if (name === "reports") loadReports();
+  if (name === "users") loadUsers();
+  if (name === "stats") loadStats();
+  if (name === "moments") loadMoments();
+  if (name === "channels") loadChannels();
+  if (name === "version") loadVersion();
+}
+
+
+async function loadVersion() {
+  try {
+    const v = await req("/api/app/version/admin");
+    document.getElementById("vLatest").value = v.latest_version || "";
+    document.getElementById("vMin").value = v.min_version || "";
+    document.getElementById("vForce").value = (String(v.force) === "true") ? "true" : "false";
+    document.getElementById("vUrl").value = v.download_url || "";
+    document.getElementById("vLog").value = v.changelog || "";
+    document.getElementById("vNotice").value = v.notice || "";
+  } catch (e) { toast("读取版本配置失败：" + e.message); }
+}
+async function saveVersion() {
+  const body = {
+    latest_version: document.getElementById("vLatest").value.trim(),
+    min_version: document.getElementById("vMin").value.trim(),
+    force: document.getElementById("vForce").value,
+    download_url: document.getElementById("vUrl").value.trim(),
+    changelog: document.getElementById("vLog").value,
+    notice: document.getElementById("vNotice").value.trim()
+  };
+  try {
+    await req("/api/app/version/admin", { method: "POST", body: JSON.stringify(body) });
+    toast("已保存");
+  } catch (e) { toast("保存失败：" + e.message); }
+}
+async function loadChannels() {
+  const st = document.getElementById("chStatus").value;
+  try {
+    // 待审核走管理员接口；其它状态用列表接口再过滤（列表仅返回 approved，故 pending 单独取）
+    let items = [];
+    if (st === "pending") {
+      items = await req("/api/channels/admin/pending");
+    } else {
+      items = await req("/api/channels");
+      items = items.filter(c => (c.status || "approved") === st);
+    }
+    document.getElementById("channelList").innerHTML = items.map(c => `
+      <div class="card" style="box-shadow:none;border:1px solid #eef1f7;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start">
+        ${c.image ? `<img class="pic" src="${c.image}">` : `<div class="pic" style="background:#e7ecf6;display:flex;align-items:center;justify-content:center;color:#9aa4b8">无图</div>`}
+        <div style="flex:1">
+          <div style="font-weight:600">${c.name} <span class="tag ${c.status}">${c.status === 'approved' ? '已通过' : c.status === 'pending' ? '待审核' : '已驳回'}</span></div>
+          <div class="muted" style="margin:4px 0">创始人：${c.owner_name || c.owner_username} · 成员 ${c.member_count}</div>
+          <div style="font-size:13px;color:#38415a">${(c.intro || "").replace(/</g, "&lt;")}</div>
+          ${c.status === 'pending' ? `<div class="row" style="margin-top:8px">
+            <button class="ok sm" onclick="reviewChannel(${c.id}, 'approve')">通过</button>
+            <button class="danger sm" onclick="reviewChannel(${c.id}, 'reject')">驳回</button>
+          </div>` : ``}
+        </div>
+      </div>`).join("") || `<div class="muted">暂无频道</div>`;
+  } catch (e) { toast("频道加载失败：" + e.message); }
+}
+async function reviewChannel(id, action) {
+  try {
+    await req("/api/channels/admin/" + id + "/review", {
+      method: "POST",
+      body: JSON.stringify({ action })
+    });
+    toast(action === "approve" ? "已通过" : "已驳回");
+    loadChannels();
+  } catch (e) { toast("操作失败：" + e.message); }
+}
+async function loadChats() {
+  const kw = document.getElementById("chatKw").value.trim();
+  try {
+    const st = await req("/api/admin/chats/stats");
+    document.getElementById("chatStats").textContent =
+      `消息总数 ${st.messages} · 好友关系 ${st.friends} · 待处理申请 ${st.pending_requests}`;
+    const data = await req("/api/admin/chats?limit=200" + (kw ? "&keyword=" + encodeURIComponent(kw) : ""));
+    const items = data.items || [];
+    document.getElementById("chatRows").innerHTML = items.map(m => `
+      <tr>
+        <td>${m.id}</td>
+        <td>${m.sender_name}</td>
+        <td>${m.receiver_name}</td>
+        <td>${m.kind}</td>
+        <td style="max-width:320px;word-break:break-all">${(m.content || "").replace(/</g, "&lt;") }</td>
+        <td>${(m.created_at || "").replace("T", " ").slice(0, 16)}</td>
+      </tr>`).join("") || `<tr><td colspan="6" class="muted">暂无消息</td></tr>`;
+  } catch (e) { toast("聊天加载失败：" + e.message); }
+}
+async function clearChats() {
+  if (!confirm("确认清空所有聊天消息？不可恢复！")) return;
+  try {
+    const r = await req("/api/admin/chats", "DELETE");
+    toast("已清空 " + (r.deleted ?? 0) + " 条消息");
+    loadChats();
+  } catch (e) { toast("清空失败：" + e.message); }
+}
+async function loadStats() {
+  try {
+    const s = await req("/api/admin/stats");
+    const map = {
+      users: "用户总数", moments_total: "动态总数", moments_pending: "待审核",
+      moments_approved: "已通过", moments_rejected: "已驳回",
+      comments: "评论数", diaries: "日记数", announcements: "公告数"
+    };
+    document.getElementById("statsBox").innerHTML = Object.keys(map)
+      .map(k => `<div class="stat"><b>${s[k] ?? 0}</b><span>${map[k]}</span></div>`).join("");
+  } catch (e) { toast("统计加载失败：" + e.message); }
+}
+
+async function loadUsers() {
+  const kw = document.getElementById("userKw").value.trim();
+  try {
+    const list = await req("/api/admin/users?limit=200" + (kw ? "&keyword=" + encodeURIComponent(kw) : ""));
+    document.getElementById("userRows").innerHTML = list.map(u => `
+      <tr>
+        <td>${u.id}</td>
+        <td>${u.avatar ? `<img class="av" src="${u.avatar}">` : `<div class="av"></div>`}</td>
+        <td>${u.username}</td>
+        <td>${u.nickname || ""}</td>
+        <td>${u.is_admin ? "✅" : "—"}</td>
+        <td>
+          <button class="sm ghost" onclick="resetPwd(${u.id})">重置密码</button>
+          <button class="sm ${u.is_admin ? 'danger' : 'ok'}" onclick="toggleAdmin(${u.id})">${u.is_admin ? "取消管理员" : "设为管理员"}</button>
+          <button class="sm ghost" onclick="vipEdit(${u.id}, '${(u.nickname||u.username||"").replace(/[\'`]/g,"")}')">💰会员</button>
+          <button class="sm danger" onclick="delUser(${u.id})">删除</button>
+        </td>
+      </tr>`).join("") || `<tr><td colspan="6" class="muted">暂无数据</td></tr>`;
+  } catch (e) { toast("用户加载失败：" + e.message); }
+}
+
+async function vipEdit(id, name) {
+  try {
+    const v = await req("/api/admin/vip/" + id);
+    const info = "用户：" + name + "\n当前余额：" + v.balance + "\n会员到期：" + (v.vip_expire || "非会员") +
+      "\n\n操作（可填多个，用 / 分隔）：余额=设置余额，+余额=增加余额，会员=开通天数";
+    const input = prompt(info + "\n\n请输入，例如：\n余额=100 或 +余额=50 或 会员=30", "");
+    if (!input) return;
+    const body = {};
+    input.split(/[\s,，\/]+/).forEach(seg => {
+      if (seg.startsWith("+余额=")) body.add_balance = parseInt(seg.split("=")[1] || "0");
+      else if (seg.startsWith("余额=")) body.balance = parseInt(seg.split("=")[1] || "0");
+      else if (seg.startsWith("会员=")) body.add_vip_days = parseInt(seg.split("=")[1] || "0");
+      else if (seg === "清空会员") body.clear_vip = true;
+    });
+    await req("/api/admin/vip/" + id, { method: "POST", body: JSON.stringify(body) });
+    toast("已更新");
+    loadUsers();
+  } catch (e) { toast("操作失败：" + e.message); }
+}
+async function resetPwd(id) {
+  const p = prompt("输入新密码（至少6位）：");
+  if (!p) return;
+  try { await req(`/api/admin/users/${id}/reset-password?new_password=${encodeURIComponent(p)}`, { method: "POST" });
+        toast("密码已重置"); } catch (e) { toast("失败：" + e.message); }
+}
+async function toggleAdmin(id) {
+  try { await req(`/api/admin/users/${id}/toggle-admin`, { method: "POST" }); loadUsers(); }
+  catch (e) { toast("失败：" + e.message); }
+}
+async function delUser(id) {
+  if (!confirm("确认删除该用户及其全部数据？")) return;
+  try { await req(`/api/admin/users/${id}`, { method: "DELETE" }); loadUsers(); loadStats(); }
+  catch (e) { toast("失败：" + e.message); }
+}
+
+async function loadMoments() {
+  const st = document.getElementById("mStatus").value;
+  try {
+    const list = await req("/api/admin/moments?limit=100" + (st ? "&status=" + st : ""));
+    const tag = s => `<span class="tag ${s}">${s === "pending" ? "待审核" : s === "approved" ? "已通过" : "已驳回"}</span>`;
+    document.getElementById("momentList").innerHTML = list.map(m => `
+      <div class="card" style="box-shadow:none;border:1px solid #eef1f7">
+        <div class="row" style="justify-content:space-between">
+          <div class="row">
+            ${m.avatar ? `<img class="av" src="${m.avatar}">` : `<div class="av"></div>`}
+            <div><b>${m.nickname || m.username}</b><div class="muted">#${m.id} · ${new Date(m.created_at).toLocaleString()}</div></div>
+          </div>
+          <div>${tag(m.status)}<span class="muted" style="margin-left:8px">💬 ${m.comment_count}</span></div>
+        </div>
+        <div style="margin:10px 0">${(m.content || "").replace(/</g, "&lt;")}</div>
+        <div>${(m.images || []).map(u => `<img class="pic" src="${u}">`).join("")}${(m.videos || []).map(u => `<video class="pic" src="${u}" controls style="width:160px;height:120px"></video>`).join("")}</div>
+        <div class="row" style="margin-top:10px">
+          <button class="sm ok" onclick="review(${m.id},'approved')">通过</button>
+          <button class="sm danger" onclick="review(${m.id},'rejected')">驳回</button>
+          <button class="sm ghost" onclick="viewComments(${m.id})">看评论</button>
+        </div>
+        <div id="cmt-${m.id}" class="muted" style="margin-top:8px"></div>
+      </div>`).join("") || `<div class="muted">暂无动态</div>`;
+  } catch (e) { toast("动态加载失败：" + e.message); }
+}
+
+async function review(id, status) {
+  try {
+    await req(`/api/admin/moments/${id}/review`, {
+      method: "POST", body: JSON.stringify({ status })
+    });
+    toast(status === "approved" ? "已通过" : "已驳回");
+    loadMoments(); loadStats();
+  } catch (e) { toast("操作失败：" + e.message); }
+}
+
+async function viewComments(id) {
+  const box = document.getElementById("cmt-" + id);
+  if (box.dataset.on === "1") { box.dataset.on = "0"; box.innerHTML = ""; return; }
+  try {
+    const list = await req(`/api/moments/${id}/comments`);
+    box.dataset.on = "1";
+    box.innerHTML = list.map(c => `· ${c.nickname || c.username}：${(c.content || "").replace(/</g, "&lt;")}`).join("<br>") || "（无评论）";
+  } catch (e) { toast("评论加载失败：" + e.message); }
+}
+
+async function loadAnn() {
+  try {
+    const list = await req("/api/announcements");
+    document.getElementById("annList").innerHTML = list.map(a => `
+      <div class="card" style="box-shadow:none;border:1px solid #eef1f7">
+        <div class="row" style="justify-content:space-between">
+          <b>${(a.title || "").replace(/</g, "&lt;")}</b>
+          <button class="sm danger" onclick="delAnn(${a.id})">删除</button>
+        </div>
+        <div class="muted">${new Date(a.created_at).toLocaleString()}</div>
+        <div style="margin-top:6px">${(a.content || "").replace(/</g, "&lt;")}</div>
+      </div>`).join("") || `<div class="muted">暂无公告</div>`;
+  } catch (e) { toast("公告加载失败：" + e.message); }
+}
+async function createAnn() {
+  const title = document.getElementById("annTitle").value.trim();
+  const content = document.getElementById("annContent").value.trim();
+  if (!title || !content) return toast("标题和内容都要填");
+  try {
+    await req("/api/announcements", { method: "POST", body: JSON.stringify({ title, content }) });
+    document.getElementById("annTitle").value = ""; document.getElementById("annContent").value = "";
+    toast("已发布"); loadAnn(); loadStats();
+  } catch (e) { toast("发布失败：" + e.message); }
+}
+async function delAnn(id) {
+  if (!confirm("确认删除该公告？")) return;
+  try { await req(`/api/announcements/${id}`, { method: "DELETE" }); loadAnn(); loadStats(); }
+  catch (e) { toast("失败：" + e.message); }
+}
+
+// 自动进入（若已有 token 且是管理员）
+if (TOKEN) enter();
+
+/* ===== 广告管理 ===== */
+async function loadAds() {
+  try {
+    const items = await req("/api/admin/ads");
+    const box = document.getElementById("adList");
+    if (!items.length) { box.innerHTML = '<div class="muted">暂无广告</div>'; return; }
+    box.innerHTML = items.map(a => {
+      const img = a.image ? '<img class="pic" src="' + a.image + '" style="width:120px;height:68px;object-fit:cover">' : '<div class="pic" style="width:120px;height:68px;background:#e7ecf6"></div>';
+      const badge = a.active ? '<span class="tag approved">已启用</span>' : '<span class="tag rejected">已停用</span>';
+      const toggleTxt = a.active ? '停用' : '启用';
+      const toggleTo = a.active ? 'false' : 'true';
+      return '<div class="card" style="box-shadow:none;border:1px solid #eef1f7;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start">'
+        + img
+        + '<div style="flex:1">'
+        + '<div style="font-weight:600">' + (a.title || '无标题') + ' ' + badge + ' <span class="muted">排序 ' + a.sort + '</span></div>'
+        + '<div class="muted" style="margin:4px 0;word-break:break-all">跳转：' + (a.link || '（无）') + '</div>'
+        + '<div class="row">'
+        + '<button class="sm" data-act="toggle" data-id="' + a.id + '" data-to="' + toggleTo + '">' + toggleTxt + '</button>'
+        + '<button class="ghost sm" data-act="editlink" data-id="' + a.id + '">改链接</button>'
+        + '<button class="danger sm" data-act="del" data-id="' + a.id + '">删除</button>'
+        + '</div></div></div>';
+    }).join('');
+  } catch (e) { toast("广告加载失败：" + e.message); }
+}
+async function createAd() {
+  const title = document.getElementById("adTitle").value.trim();
+  const link = document.getElementById("adLink").value.trim();
+  const sort = parseInt(document.getElementById("adSort").value || "0", 10);
+  const f = document.getElementById("adFile").files[0];
+  if (!f) return toast("请先选择广告图片");
+  try {
+    const fd = new FormData(); fd.append("file", f);
+    const up = await req("/api/admin/ads/upload", { method: "POST", body: fd });
+    const image = up.url || up.image || up.path;
+    await req("/api/admin/ads", { method: "POST", body: JSON.stringify({ title, image, link, sort, active: true }) });
+    toast("广告已添加");
+    document.getElementById("adTitle").value = "";
+    document.getElementById("adLink").value = "";
+    document.getElementById("adFile").value = "";
+    loadAds();
+  } catch (e) { toast("添加失败：" + e.message); }
+}
+async function toggleAd(id, active) {
+  try { await req("/api/admin/ads/" + id, { method: "PUT", body: JSON.stringify({ active }) }); toast(active ? "已启用" : "已停用"); loadAds(); }
+  catch (e) { toast("操作失败：" + e.message); }
+}
+async function editAdLink(id) {
+  const link = prompt("输入新的跳转网址（留空则不跳转）：");
+  if (link === null) return;
+  try { await req("/api/admin/ads/" + id, { method: "PUT", body: JSON.stringify({ link: link.trim() }) }); toast("已更新"); loadAds(); }
+  catch (e) { toast("更新失败：" + e.message); }
+}
+async function delAd(id) {
+  if (!confirm("确定删除该广告？")) return;
+  try { await req("/api/admin/ads/" + id, { method: "DELETE" }); toast("已删除"); loadAds(); }
+  catch (e) { toast("删除失败：" + e.message); }
+}
+/* ===== 应用管理 ===== */
+async function loadApps() {
+  const st = document.getElementById("appStatus").value;
+  try {
+    let items = [];
+    if (st === "pending") {
+      items = await req("/api/apps/pending");
+    } else {
+      items = await req("/api/apps");
+      items = items.filter(a => (a.status || "approved") === st);
+    }
+    document.getElementById("appList").innerHTML = items.map(a => `
+      <div class="card" style="box-shadow:none;border:1px solid #eef1f7;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start">
+        ${a.icon ? `<img class="pic" src="${a.icon}" style="width:56px;height:56px;object-fit:cover;border-radius:12px">` : `<div class="pic" style="width:56px;height:56px;background:#e7ecf6;border-radius:12px"></div>`}
+        <div style="flex:1">
+          <div style="font-weight:600">${a.name} <span class="tag ${a.status || "approved"}">${(a.status === "pending" ? "待审核" : a.status === "rejected" ? "已驳回" : "已通过")}</span></div>
+          <div class="muted" style="margin:4px 0">分类：${a.category || "-"} · 版本：${a.version || "-"} · 大小：${a.size || "-"}</div>
+          <div style="font-size:13px;color:#38415a">${(a.intro || "").replace(/</g, "&lt;")}</div>
+          ${a.status === "pending" ? `<div class="row" style="margin-top:8px">
+            <button class="ok sm" data-act="apppass" data-id="${a.id}">通过</button>
+            <button class="danger sm" data-act="apprej" data-id="${a.id}">驳回</button>
+          </div>` : ``}
+        </div>
+      </div>`).join("") || `<div class="muted">暂无应用</div>`;
+  } catch (e) { toast("应用加载失败：" + e.message); }
+}
+async function reviewApp(id, approve) {
+  let reason = "";
+  if (!approve) { reason = prompt("驳回原因（可留空）：") || ""; }
+  try {
+    await req("/api/apps/" + id + "/review?approve=" + approve + "&reason=" + encodeURIComponent(reason), { method: "POST" });
+    toast(approve ? "已通过" : "已驳回"); loadApps();
+  } catch (e) { toast("操作失败：" + e.message); }
+}
+
+/* ===== 举报管理 ===== */
+async function loadReports() {
+  const st = document.getElementById("repStatus").value;
+  try {
+    const items = await req("/api/admin/reports?st=" + encodeURIComponent(st));
+    const tmap = { moment: "帖子", app: "应用", channel: "频道", comment: "评论", user: "用户" };
+    document.getElementById("reportList").innerHTML = items.map(r => `
+      <div class="card" style="box-shadow:none;border:1px solid #eef1f7;margin-bottom:10px">
+        <div style="font-weight:600">#${r.id} ${tmap[r.target_type] || r.target_type} ID:${r.target_id} <span class="tag ${r.status}">${r.status === "pending" ? "待处理" : r.status === "handled" ? "已处理" : "已忽略"}</span></div>
+        <div class="muted" style="margin:4px 0">举报人 ID:${r.reporter_id} · ${(r.created_at || "").replace("T", " ").slice(0, 19)}</div>
+        <div style="font-size:13px;color:#38415a">原因：${(r.reason || "").replace(/</g, "&lt;")}</div>
+        <div style="font-size:13px;color:#6b7590;margin-top:4px">补充：${(r.detail || "").replace(/</g, "&lt;")}</div>
+        <div class="row" style="margin-top:8px">
+          <button class="ok sm" data-act="repok" data-id="${r.id}">标记已处理</button>
+          <button class="ghost sm" data-act="repig" data-id="${r.id}">忽略</button>
+        </div>
+      </div>`).join("") || `<div class="muted">暂无举报</div>`;
+  } catch (e) { toast("举报加载失败：" + e.message); }
+}
+async function handleReport(id, action) {
+  try { await req("/api/admin/reports/" + id + "/handle?action=" + action, { method: "POST" }); toast("已更新"); loadReports(); }
+  catch (e) { toast("操作失败：" + e.message); }
+}
+
+
+document.addEventListener("click", function(ev) {
+  var t = ev.target.closest("[data-act]");
+  if (!t) return;
+  var act = t.getAttribute("data-act");
+  var id = parseInt(t.getAttribute("data-id"), 10);
+  if (act === "toggle") { toggleAd(id, t.getAttribute("data-to") === "true"); }
+  else if (act === "editlink") { editAdLink(id); }
+  else if (act === "del") { delAd(id); }
+  else if (act === "apppass") { reviewApp(id, true); }
+  else if (act === "apprej") { reviewApp(id, false); }
+  else if (act === "repok") { handleReport(id, "handled"); }
+  else if (act === "repig") { handleReport(id, "dismissed"); }
+});
+</script>
+</body>
+</html>

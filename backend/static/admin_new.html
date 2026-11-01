@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>小德后台</title>
+<style>
+:root{--pri:#3b6ef5;--pri-d:#2f59d0;--bg:#f5f7fb;--card:#fff;--tx:#1f2430;--mut:#8a94a6;--bd:#e8ecf3;--ok:#22b573;--no:#ff5b5b}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--tx)}
+a{color:var(--pri);text-decoration:none}
+button{cursor:pointer;font-family:inherit}
+.hide{display:none!important}
+/* ---- 登录页 ---- */
+#login{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#eef3ff 0%,#f7f9ff 100%);padding:20px}
+.lg-card{width:100%;max-width:400px;background:#fff;border-radius:18px;box-shadow:0 12px 40px rgba(59,110,245,.14);padding:34px 30px}
+.lg-logo{width:54px;height:54px;border-radius:14px;background:linear-gradient(135deg,#3b6ef5,#6b9bff);display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px;font-weight:700;margin:0 auto 14px}
+.lg-t{text-align:center;font-size:20px;font-weight:700;margin-bottom:4px}
+.lg-s{text-align:center;color:var(--mut);font-size:13px;margin-bottom:22px}
+.fld{margin-bottom:14px}
+.fld label{display:block;font-size:13px;color:#5b6478;margin-bottom:6px;font-weight:500}
+.fld input{width:100%;padding:11px 13px;border:1.5px solid var(--bd);border-radius:10px;font-size:14px;outline:none;transition:.15s}
+.fld input:focus{border-color:var(--pri);box-shadow:0 0 0 3px rgba(59,110,245,.12)}
+.cap-row{display:flex;gap:10px}
+.cap-row input{flex:1}
+.cap-box{width:110px;height:44px;border-radius:10px;background:#eef2fa;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;letter-spacing:3px;color:#3557b7;cursor:pointer;user-select:none;font-style:italic;border:1.5px solid var(--bd)}
+.btn{width:100%;padding:12px;border:0;border-radius:10px;background:var(--pri);color:#fff;font-size:15px;font-weight:600;transition:.15s}
+.btn:hover{background:var(--pri-d)}
+.btn:disabled{opacity:.6;cursor:not-allowed}
+.lg-err{color:var(--no);font-size:13px;min-height:18px;text-align:center;margin-top:10px}
+/* ---- 主布局 ---- */
+#app{min-height:100vh}
+.topbar{height:56px;background:#fff;border-bottom:1px solid var(--bd);display:flex;align-items:center;padding:0 16px;position:sticky;top:0;z-index:50}
+.burger{width:40px;height:40px;border:0;background:transparent;border-radius:10px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:5px}
+.burger:hover{background:#f0f4fd}
+.burger span{width:22px;height:2.5px;background:#3a4256;border-radius:2px;transition:.2s}
+.top-title{font-size:17px;font-weight:700;margin-left:12px}
+.top-spacer{flex:1}
+.top-user{font-size:13px;color:var(--mut);margin-right:12px}
+/* ---- 侧边栏 ---- */
+.mask{position:fixed;inset:0;background:rgba(20,26,40,.4);z-index:90;opacity:0;pointer-events:none;transition:.22s}
+.mask.on{opacity:1;pointer-events:auto}
+.side{position:fixed;top:0;left:0;bottom:0;width:260px;background:#fff;z-index:100;transform:translateX(-100%);transition:.25s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;box-shadow:4px 0 24px rgba(0,0,0,.06)}
+.side.on{transform:translateX(0)}
+.side-h{padding:20px 20px 14px;border-bottom:1px solid var(--bd)}
+.side-h .n{font-size:17px;font-weight:700}
+.side-h .r{font-size:12px;color:var(--mut);margin-top:2px}
+.side-nav{flex:1;overflow-y:auto;padding:10px}
+.side-nav a{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;color:#3a4256;font-size:14.5px;font-weight:500;margin-bottom:2px;transition:.12s}
+.side-nav a:hover{background:#f0f4fd}
+.side-nav a.on{background:var(--pri);color:#fff}
+.side-nav .ic{font-size:17px;width:20px;text-align:center}
+.side-f{padding:12px;border-top:1px solid var(--bd)}
+.side-f button{width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:#fff;color:#5b6478;font-size:14px}
+.side-f button:hover{background:#fff5f5;color:var(--no);border-color:#ffd5d5}
+/* ---- 内容区 ---- */
+.main{padding:20px;max-width:1180px;margin:0 auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px}
+.stat{background:var(--card);border-radius:14px;padding:16px 18px;border:1px solid var(--bd)}
+.stat .k{font-size:13px;color:var(--mut);margin-bottom:8px}
+.stat .v{font-size:27px;font-weight:700;line-height:1}
+.stat .v small{font-size:13px;color:var(--mut);font-weight:500;margin-left:4px}
+.stat .accent{color:var(--pri)}
+.sec-title{font-size:15px;font-weight:700;margin:22px 0 12px;display:flex;align-items:center;gap:8px}
+.card{background:var(--card);border-radius:14px;padding:18px;border:1px solid var(--bd);margin-bottom:16px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+input,select,textarea{padding:9px 12px;border:1.5px solid var(--bd);border-radius:9px;font-size:14px;outline:none;font-family:inherit}
+input:focus,select:focus,textarea:focus{border-color:var(--pri)}
+.btn2{padding:9px 16px;border:0;border-radius:9px;background:var(--pri);color:#fff;font-size:14px;font-weight:500}
+.btn2:hover{background:var(--pri-d)}
+.btn2.g{background:#eef1f8;color:#38415a}
+.btn2.r{background:var(--no)}
+.btn2.k{background:var(--ok)}
+.item{border:1px solid var(--bd);border-radius:11px;padding:13px;margin-bottom:10px}
+.item .m{color:var(--mut);font-size:12px;margin-bottom:6px}
+.tag{display:inline-block;padding:2px 9px;border-radius:20px;font-size:12px;font-weight:500}
+.pend{background:#fff3d6;color:#b8860b}.appr{background:#d9f7e8;color:#16885a}.rej{background:#ffe1e1;color:#d33}
+.muted{color:var(--mut);font-size:13px}
+.toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:#1f2430;color:#fff;padding:11px 20px;border-radius:10px;z-index:9999;font-size:14px;opacity:0;transition:.2s;pointer-events:none}
+.toast.on{opacity:1}
+.empty{text-align:center;color:var(--mut);padding:30px;font-size:14px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:560px){.g2{grid-template-columns:1fr}.main{padding:14px}}
+.img-t{width:64px;height:64px;object-fit:cover;border-radius:8px;margin:3px 5px 0 0;border:1px solid var(--bd)}
+.file-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.file-item .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.file-item .sz{color:var(--mut);font-size:12px}
+.badge{display:inline-block;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--no);color:#fff;font-size:11px;line-height:18px;text-align:center;margin-left:6px}
+</style>
+<style>
+#cdkMask{position:fixed;inset:0;background:rgba(10,14,24,.55);z-index:9999;display:none;align-items:center;justify-content:center;padding:18px}
+#cdkMask.on{display:flex}
+#cdkBox{background:#fff;border-radius:16px;max-width:520px;width:100%;max-height:78vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 18px 60px rgba(0,0,0,.3)}
+#cdkBox .hd{padding:16px 18px;border-bottom:1px solid #eef0f5;display:flex;align-items:center;justify-content:space-between}
+#cdkBox .hd b{font-size:16px}
+#cdkBox .bd{padding:14px 18px;overflow:auto;flex:1}
+#cdkBox .ft{padding:12px 18px;border-top:1px solid #eef0f5;display:flex;gap:8px;justify-content:flex-end}
+#cdkTa{width:100%;height:46vh;border:1px solid #e3e7f0;border-radius:10px;padding:12px;font-family:monospace;font-size:13px;line-height:1.7;resize:none;box-sizing:border-box;background:#fafbfe}
+.cdkX{background:none;border:0;font-size:22px;cursor:pointer;color:#8a93a6}
+</style>
+</head>
+<body>
+
+<!-- ============ 登录页 ============ -->
+<div id="login">
+  <div class="lg-card">
+    <div class="lg-logo">德</div>
+    <div class="lg-t">小德后台管理系统</div>
+    <div class="lg-s">Xiaode Admin Console</div>
+    <div class="fld">
+      <label>管理员账号</label>
+      <input id="lu" placeholder="请输入账号" autocomplete="username"/>
+    </div>
+    <div class="fld">
+      <label>登录密码</label>
+      <input id="lp" type="password" placeholder="请输入密码" autocomplete="current-password"/>
+    </div>
+    <div class="fld">
+      <label>密保验证 · 你喜欢的人是谁？</label>
+      <div class="cap-row">
+        <input id="lc" placeholder="请输入答案" autocomplete="off"/>
+        <div class="cap-box" id="capBox" style="font-size:14px;font-style:normal;letter-spacing:0;width:auto;padding:0 14px">点此看问题</div>
+      </div>
+    </div>
+    <div class="fld" style="display:flex;align-items:center;gap:8px;margin-bottom:18px">
+      <input type="checkbox" id="remember" style="width:auto;padding:0"/>
+      <label for="remember" style="margin:0;cursor:pointer;font-size:13.5px;color:#5b6478">记住账号密码（下次自动登录）</label>
+    </div>
+    <button class="btn" id="loginBtn" onclick="doLogin()">登 录</button>
+    <div class="lg-err" id="lgErr"></div>
+  </div>
+</div>
+
+<!-- ============ 主界面 ============ -->
+<div id="app" class="hide">
+  <div class="topbar">
+    <button class="burger" onclick="toggleSide()" title="菜单"><span></span><span></span><span></span></button>
+    <div class="top-title" id="pageTitle">数据概览</div>
+    <div class="top-spacer"></div>
+    <div class="top-user" id="topUser"></div>
+    <button class="btn2 g" style="padding:7px 13px" onclick="refreshCur()">刷新</button>
+  </div>
+
+  <div class="mask" id="mask" onclick="toggleSide(false)"></div>
+  <div class="side" id="side">
+    <div class="side-h">
+      <div class="n">小德后台</div>
+      <div class="r" id="sideRole">超级管理员</div>
+    </div>
+    <nav class="side-nav" id="nav"></nav>
+    <div class="side-f">
+      <button onclick="logout()">退出登录</button>
+    </div>
+  </div>
+
+  <div class="main" id="content"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script>
+/* ===== 基础 ===== */
+var TK=(localStorage.getItem("xdtk")||sessionStorage.getItem("xdtk")||"");
+var ME=null, CUR="dash", AUTO=false;
+/* 记住密码：简单混淆（base64），非安全加密，仅防肉眼泄露 */
+function _enc(s){try{return btoa(unescape(encodeURIComponent(s)));}catch(e){return "";}}
+function _dec(s){try{return decodeURIComponent(escape(atob(s)));}catch(e){return "";}}
+function saveRemember(u,p,on){
+  if(on){localStorage.setItem("xd_u",_enc(u));localStorage.setItem("xd_p",_enc(p));localStorage.setItem("xd_rm","1");}
+  else{localStorage.removeItem("xd_u");localStorage.removeItem("xd_p");localStorage.removeItem("xd_rm");}
+}
+function loadRemember(){
+  try{
+    if(localStorage.getItem("xd_rm")==="1"){
+      var u=_dec(localStorage.getItem("xd_u")||""),p=_dec(localStorage.getItem("xd_p")||"");
+      if($("lu"))$("lu").value=u;
+      if($("lp"))$("lp").value=p;
+      if($("remember"))$("remember").checked=true;
+      return {u:u,p:p};
+    }
+  }catch(e){}
+  return null;
+}
+function $(id){return document.getElementById(id);}
+function tt(m){var t=$("toast");t.textContent=m;t.classList.add("on");clearTimeout(t._h);t._h=setTimeout(function(){t.classList.remove("on");},1900);}
+function esc(s){return String(s==null?"":s).replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c];});}
+function fmtSize(b){if(!b)return "0 B";var u=["B","KB","MB","GB"],i=0;while(b>=1024&&i<3){b/=1024;i++;}return b.toFixed(i?1:0)+" "+u[i];}
+function fmtTime(ts){if(!ts)return "";var d=typeof ts==="number"?new Date(ts*1000):new Date(ts);var p=function(n){return (n<10?"0":"")+n;};return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())+" "+p(d.getHours())+":"+p(d.getMinutes());}
+
+/* ===== API ===== */
+async function api(path,opt){
+  opt=opt||{};
+  opt.headers=opt.headers||{};
+  if(TK)opt.headers["Authorization"]="Bearer "+TK;
+  if(opt.body&&typeof opt.body!=="string"){opt.headers["Content-Type"]="application/json";opt.body=JSON.stringify(opt.body);}
+  var r=await fetch(path,opt);
+  var txt=await r.text();var d;
+  try{d=txt?JSON.parse(txt):{};}catch(e){d={detail:txt};}
+  if(r.status===401){if(!opt.no401){logout(true);}throw new Error("登录已过期");}
+  if(!r.ok)throw new Error(msgOf(d,r.status));
+  return d;
+}
+/* 把后端返回的错误 detail（可能是字符串/数组/对象）转成可读文本 */
+function msgOf(d,st){
+  try{
+    var x=d&&d.detail; if(x==null)x=d&&(d.message||d.msg);
+    if(Array.isArray(x)){
+      return x.map(function(i){
+        if(i&&typeof i==="object"){
+          var loc=i.loc?((Array.isArray(i.loc)?i.loc.join("."):i.loc)+": "):"";
+          return loc+(i.msg||i.message||JSON.stringify(i));
+        }
+        return String(i);
+      }).join("； ");
+    }
+    if(x&&typeof x==="object")return x.msg||x.message||JSON.stringify(x);
+    return x?String(x):("请求失败 (HTTP "+st+")");
+  }catch(e){return "请求失败 (HTTP "+st+")";}
+}
+function errMsg(e){return (e&&(e.message||e.msg))?String(e.message||e.msg):String(e);}
+
+/* ===== 密保问答（固定答案） ===== */
+var SEC_ANSWER="hrl";
+function newCap(){ /* 保留空实现，兼容旧调用 */ }
+
+/* ===== 登录 / 退出 ===== */
+var _fail=0,_lockUntil=0;
+async function doLogin(){
+  var u=$("lu").value.trim(),p=$("lp").value,c=$("lc").value.trim();
+  var e=$("lgErr");
+  if(Date.now()<_lockUntil){e.textContent="尝试过多，请稍后 "+Math.ceil((_lockUntil-Date.now())/1000)+" 秒";return;}
+  if(!u||!p){e.textContent="请输入账号和密码";return;}
+  if(c.toLowerCase()!==SEC_ANSWER){e.textContent="密保答案错误";$("lc").value="";return;}
+  var b=$("loginBtn");b.disabled=true;b.textContent="登录中...";e.textContent="";
+  try{
+    var d=await fetch("/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:u,password:p})}).then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j};});});
+    if(!d.ok)throw new Error(d.j.detail||"登录失败");
+    TK=d.j.access_token||d.j.token;
+    var me=await fetch("/api/auth/me",{headers:{"Authorization":"Bearer "+TK}}).then(function(r){return r.json();});
+    if(!me.is_admin){throw new Error("该账号不是管理员");}
+    localStorage.setItem("xdtk",TK);sessionStorage.setItem("xdtk",TK);ME=me;
+    saveRemember(u,p,$("remember")&&$("remember").checked);
+    _fail=0;enter();
+  }catch(err){
+    _fail++;if(_fail>=3){_lockUntil=Date.now()+10000;_fail=0;}
+    e.textContent=err.message||"登录失败";$("lc").value="";
+  } finally {b.disabled=false;b.textContent="登 录";}
+}
+function logout(silent){
+  TK="";ME=null;localStorage.removeItem("xdtk");sessionStorage.removeItem("xdtk");
+  $("app").classList.add("hide");$("login").classList.remove("hide");
+  newCap();if($("lp"))$("lp").value="";if($("lc"))$("lc").value="";
+  // 退出不清除「记住密码」；仅回填账号密码，方便再次登录
+  loadRemember();
+  if(silent)tt("登录已过期，请重新登录");
+}
+async function enter(){
+  $("login").classList.add("hide");$("app").classList.remove("hide");
+  $("topUser").textContent=(ME.nickname||ME.username||"")+(ME.username?" ("+ME.username+")":"");
+  $("sideRole").textContent="超级管理员";
+  buildNav();go("dash");
+}
+
+/* ===== 侧边栏 ===== */
+var MENU=[
+  {k:"board",ic:"📈",t:"数据看板"},
+  {k:"content",ic:"🗂️",t:"内容总览"},
+  {k:"dash",ic:"📊",t:"数据概览"},
+  {k:"security",ic:"🔐",t:"安全管理"},
+  {k:"admins",ic:"🔑",t:"管理员"},
+  {k:"users",ic:"👥",t:"用户管理"},
+  {k:"ban",ic:"🚫",t:"封禁管理"},
+  {k:"vip",ic:"💎",t:"会员管理"},
+  {k:"files",ic:"📁",t:"文件管理"},
+  {k:"reqem",ic:"🎟️",t:"卡密管理"},
+  {k:"directmsg",ic:"📢",t:"定向消息"},
+  {k:"moments",ic:"📝",t:"帖子管理"},
+  {k:"comments",ic:"💬",t:"评论管理"},
+  {k:"audit",ic:"✅",t:"审核管理"},
+  {k:"reviewers",ic:"👤",t:"审核员管理"},
+  {k:"reports",ic:"🚨",t:"举报管理"},
+  {k:"notice",ic:"📢",t:"公告管理"},
+  {k:"notifs",ic:"🔔",t:"通知管理"},
+  {k:"update",ic:"🔄",t:"更新管理"},
+  {k:"ads",ic:"📣",t:"广告管理"},
+  {k:"splash",ic:"📺",t:"开屏广告"}
+];
+function buildNav(){
+  $("nav").innerHTML=MENU.map(function(m){
+    return "<a href=\"javascript:;\" data-k=\""+m.k+"\" onclick=\"go('"+m.k+"')\"><span class=ic>"+m.ic+"</span>"+m.t+"</a>";
+  }).join("");
+}
+function toggleSide(force){
+  var on=typeof force==="boolean"?force:!$("side").classList.contains("on");
+  $("side").classList.toggle("on",on);$("mask").classList.toggle("on",on);
+}
+function markNav(k){
+  var as=$("nav").querySelectorAll("a");
+  for(var i=0;i<as.length;i++)as[i].classList.toggle("on",as[i].getAttribute("data-k")===k);
+}
+function refreshCur(){go(CUR,true);}
+
+/* ===== 路由 ===== */
+var R={};
+function go(k,keep){
+  CUR=k;if(!keep)toggleSide(false);
+  if(k!=="dash")markNav(k);
+  var it=MENU.filter(function(m){return m.k===k;})[0];
+  $("pageTitle").textContent=it?it.t:"数据概览";
+  var fn=R[k]||R.dash;try{fn();}catch(e){$("content").innerHTML="<div class=empty>加载失败："+esc(e.message)+"</div>";}
+}
+
+/* ===== 启动：自动登录 / 回填记住的账号密码 ===== */
+(async function boot(){
+  var rm=loadRemember();
+  // 已持有 token：静默校验，通过则直接进入
+  if(TK){
+    try{
+      var me=await fetch("/api/auth/me",{headers:{"Authorization":"Bearer "+TK}}).then(function(r){return r.ok?r.json():null;});
+      if(me&&me.is_admin){ME=me;enter();return;}
+      TK="";localStorage.removeItem("xdtk");sessionStorage.removeItem("xdtk");
+    }catch(e){TK="";localStorage.removeItem("xdtk");sessionStorage.removeItem("xdtk");}
+  }
+  // 勾选了记住密码：自动填充密保并尝试静默登录
+  if(rm&&rm.u&&rm.p){
+    var lc=$("lc");if(lc)lc.value=SEC_ANSWER;
+    try{
+      var d=await fetch("/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:rm.u,password:rm.p})}).then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j};});});
+      if(d.ok){
+        TK=d.j.access_token||d.j.token;
+        var me2=await fetch("/api/auth/me",{headers:{"Authorization":"Bearer "+TK}}).then(function(r){return r.json();});
+        if(me2&&me2.is_admin){
+          localStorage.setItem("xdtk",TK);sessionStorage.setItem("xdtk",TK);ME=me2;enter();return;
+        }
+      }
+    }catch(e){}
+    // 自动登录失败：清空密保温馨提示
+    if(lc)lc.value="";
+  }
+})();
+</script>
+<script>
+/* ===== 数据概览 ===== */
+R.dash=async function(){
+  $("content").innerHTML="<div class=empty>加载中...</div>";
+  var s=await api("/api/admin/stats/full");
+  function card(k,v,accent){return "<div class=stat><div class=k>"+k+"</div><div class=v"+(accent?" accent":"")+">"+v+"</div></div>";}
+  var html="";
+  html+="<div class=sec-title>👥 用户相关</div><div class=grid>";
+  html+=card("注册用户总数",s.users_total,1);
+  html+=card("今日新增",s.users_today);
+  html+=card("近7日新增",s.users_week);
+  html+=card("活跃会员",s.vip_active);
+  html+=card("管理员",s.admins);
+  html+="</div>";
+  html+="<div class=sec-title>📝 内容相关</div><div class=grid>";
+  html+=card("帖子总数",s.moments_total,1);
+  html+=card("待审帖子",s.moments_pending);
+  html+=card("今日发帖",s.moments_today);
+  html+=card("评论总数",s.comments_total);
+  html+=card("日记总数",s.diaries_total);
+  html+="</div>";
+  html+="<div class=sec-title>🧩 应用 / 审核</div><div class=grid>";
+  html+=card("应用总数",s.apps_total,1);
+  html+=card("待审应用",s.apps_pending);
+  html+=card("待处理举报",s.reports_pending);
+  html+=card("审核员总数",s.reviewers_total);
+  html+=card("审核员在线(启用)",s.reviewers_active);
+  html+="</div>";
+  html+="<div class=sec-title>📣 运营</div><div class=grid>";
+  html+=card("公告数",s.announcements);
+  html+=card("广告总数",s.ads_total);
+  html+=card("生效广告",s.ads_active);
+  html+="</div>";
+  $("content").innerHTML=html;
+};
+
+/* ===== 安全管理 ===== */
+R.security=async function(){
+  $("content").innerHTML="<div class=empty>加载中...</div>";
+  var info=await api("/api/admin/security/info");
+  var h="";
+  h+="<div class=card><div class=sec-title style='margin-top:0'>🔑 修改登录密码</div>";
+  h+="<div class=g2><div class=fld><label>原密码</label><input id=sp_old type=password placeholder='输入当前密码'></div>";
+  h+="<div class=fld><label>新密码（≥6位）</label><input id=sp_new type=password placeholder='输入新密码'></div></div>";
+  h+="<div class=fld><label>确认新密码</label><input id=sp_new2 type=password placeholder='再次输入新密码'></div>";
+  h+="<button class='btn2' onclick='savePassword()'>保存新密码</button></div>";
+  h+="<div class=card><div class=sec-title style='margin-top:0'>🛡️ 密保设置 "+(info.has_answer?"<span class='tag appr'>已设置</span>":"<span class='tag pend'>未设置</span>")+"</div>";
+  h+="<div class=muted style='margin-bottom:10px'>密保用于忘记密码时找回身份，请牢记。答案不区分大小写。</div>";
+  h+="<div class=fld><label>密保问题</label><input id=mb_q placeholder='例如：我的第一只宠物叫什么？' value=\""+esc(info.question||"")+"\"></div>";
+  h+="<div class=fld><label>密保答案</label><input id=mb_a placeholder='输入答案（2字符以上）'></div>";
+  h+="<button class='btn2' onclick='saveMibao()'>保存密保</button></div>";
+  $("content").innerHTML=h;
+};
+async function savePassword(){
+  var o=$("sp_old").value,n=$("sp_new").value,n2=$("sp_new2").value;
+  if(!o||!n){tt("请填写完整");return;}
+  if(n!==n2){tt("两次新密码不一致");return;}
+  if(n.length<6){tt("新密码至少6位");return;}
+  try{await api("/api/admin/security/password",{method:"POST",body:{old_password:o,new_password:n}});tt("密码已修改");$("sp_old").value=$("sp_new").value=$("sp_new2").value="";}
+  catch(e){tt(e.message);}
+}
+async function saveMibao(){
+  var q=$("mb_q").value.trim(),a=$("mb_a").value.trim();
+  if(!q||!a){tt("请填写问题和答案");return;}
+  if(a.length<2){tt("答案太短");return;}
+  try{await api("/api/admin/security/mibao",{method:"POST",body:{question:q,answer:a}});tt("密保已保存");$("mb_a").value="";}
+  catch(e){tt(e.message);}
+}
+</script><script>
+/* ===== 用户管理 ===== */
+var _ukw="",_uoff=0,_ulimit=30;
+R.users=async function(){
+  var h="<div class=card><div class=row>";
+  h+="<input id=ukw placeholder='搜索用户名/昵称' value=\""+esc(_ukw)+"\" style='flex:1;min-width:180px'>";
+  h+="<button class=btn2 onclick='searchUsers()'>搜索</button>";
+  h+="<button class='btn2 g' onclick='_ukw=\"\";_uoff=0;R.users()'>重置</button>";
+  h+="</div><div id=ulist><div class=empty>加载中...</div></div>";
+  h+="<div class=row style='margin-top:12px'><button class='btn2 g' onclick='upage(-1)'>上一页</button><span class=muted id=upg></span><button class='btn2 g' onclick='upage(1)'>下一页</button></div></div>";
+  $("content").innerHTML=h;await loadUsers();
+};
+function searchUsers(){_ukw=$("ukw").value.trim();_uoff=0;loadUsers();}
+function upage(d){_uoff=Math.max(0,_uoff+d*_ulimit);loadUsers();}
+async function loadUsers(){
+  var p="/api/admin/users?limit="+_ulimit+"&offset="+_uoff;
+  if(_ukw)p+="&keyword="+encodeURIComponent(_ukw);
+  var list=await api(p);
+  $("upg").textContent=" 第 "+(_uoff/_ulimit+1)+" 页 · 本页 "+list.length+" 条 ";
+  if(!list.length){$("ulist").innerHTML="<div class=empty>没有用户</div>";return;}
+  $("ulist").innerHTML=list.map(function(u){
+    var vip=u.is_vip?"<span class='tag appr'>会员</span>":"";var ad=u.is_admin?"<span class='tag pend'>管理员</span>":"";
+    var bn=u.is_banned?"<span class='tag rej'>已封禁</span>":"";
+    return "<div class=item><div class=m><b>#"+u.id+"</b> "+esc(u.username)+" · "+esc(u.nickname||"")+" "+vip+ad+bn+"</div>"+
+    "<div class=muted style='margin-bottom:8px'>等级 Lv"+u.level+" · 经验 "+u.exp+" · 余额 "+u.balance+" · 注册 "+fmtTime(u.created_at)+"</div>"+
+    "<div style='display:flex;gap:6px;flex-wrap:wrap'>"+
+    "<button class='btn2 g' style='padding:6px 12px;font-size:13px' onclick='resetPwd("+u.id+")'>重置密码</button>"+
+    "<button class='btn2 g' style='padding:6px 12px;font-size:13px' onclick='toggleAdmin("+u.id+")'>"+(u.is_admin?"取消管理员":"设为管理员")+"</button>"+
+    "<button class='btn2 k' style='padding:6px 12px;font-size:13px' onclick='banUser("+u.id+",1)'>封禁</button>"+
+    "<button class='btn2 g' style='padding:6px 12px;font-size:13px' onclick='banUser("+u.id+",0)'>解封</button>"+
+    "<button class='btn2 r' style='padding:6px 12px;font-size:13px' onclick='delUser("+u.id+")'>删除</button>"+
+    "</div></div>";
+  }).join("");
+}
+async function resetPwd(id){
+  var np=prompt("输入新密码（≥6位）");if(!np)return;
+  try{await api("/api/admin/users/"+id+"/reset-password?new_password="+encodeURIComponent(np),{method:"POST"});tt("密码已重置");}catch(e){tt(e.message);}
+}
+async function toggleAdmin(id){
+  try{await api("/api/admin/users/"+id+"/toggle-admin",{method:"POST"});tt("已切换");loadUsers();}catch(e){tt(e.message);}
+}
+async function delUser(id){
+  if(!confirm("确认删除该用户？其动态/日记/评论将一并删除，不可恢复！"))return;
+  try{await api("/api/admin/users/"+id,{method:"DELETE"});tt("已删除");loadUsers();}catch(e){tt(e.message);}
+}
+
+/* ===== 会员管理（套餐管理）===== */
+R.vip=async function(){
+  $("content").innerHTML =
+    "<div class=row style='margin-bottom:14px'>"+
+      "<button class='btn2' onclick='vipTab(\"plan\")' id=vbtnPlan>套餐管理</button>"+
+      "<button class='btn2 g' onclick='vipTab(\"order\")' id=vbtnOrder>订单记录</button>"+
+      "<button class='btn2 g' onclick='vipTab(\"user\")' id=vbtnUser>用户会员</button>"+
+    "</div>"+
+    "<div id=vipPane></div>";
+  vipTab("plan");
+};
+
+var _vipTabCur = "plan";
+function vipTab(k){
+  _vipTabCur = k;
+  ["plan","order","user"].forEach(function(x){
+    var b = $("vbtn"+x.charAt(0).toUpperCase()+x.slice(1));
+    if(!b) return;
+    if(x===k){ b.className="btn2"; } else { b.className="btn2 g"; }
+  });
+  if(k==="plan") vipPlanPane();
+  else if(k==="order") vipOrderPane();
+  else vipUserPane();
+}
+
+/* ---------- 概览卡片 ---------- */
+async function vipOverviewHtml(){
+  try{
+    var d = await api("/api/admin/vip/overview");
+    return "<div class=grid>"+
+      "<div class=stat><div class=k>当前会员</div><div class=v>"+d.vip_total+"<small>人</small></div></div>"+
+      "<div class=stat><div class=k>本月新增</div><div class=v accent>"+d.new_this_month+"<small>笔</small></div></div>"+
+      "<div class=stat><div class=k>累计收入</div><div class=v>"+fmtNum(d.income_total)+"<small>金币</small></div></div>"+
+      "<div class=stat><div class=k>本月收入</div><div class=v>"+fmtNum(d.income_month)+"<small>金币</small></div></div>"+
+    "</div>";
+  }catch(e){ return ""; }
+}
+function fmtNum(n){ n = Number(n||0); return n % 1 === 0 ? String(n) : n.toFixed(2); }
+
+/* ---------- 套餐管理 ---------- */
+async function vipPlanPane(){
+  var pane = $("vipPane");
+  pane.innerHTML = "<div class=empty>加载中…</div>";
+  try{
+    var ov = await vipOverviewHtml();
+    var d = await api("/api/admin/vip/plans");
+    var list = d.items || [];
+    var h = ov;
+
+    h += "<div class=sec-title>💎 套餐列表 <span class=muted style='font-weight:400;font-size:12.5px'>（共 "+list.length+" 个，仅启用状态会展示给用户）</span></div>";
+    h += "<div class=card>";
+    h += "<div class=row><button class=btn2 onclick='vipPlanNew()'>+ 新增套餐</button>";
+    h += "<span class=muted style='font-size:12.5px;margin-left:auto'>价格单位：社区金币</span></div>";
+
+    if(!list.length){
+      h += "<div class=empty>还没有套餐，点「新增套餐」创建一个</div>";
+    }else{
+      list.forEach(function(p){
+        var st = p.enabled ? "<span class='tag appr'>启用中</span>" : "<span class='tag rej'>已停用</span>";
+        var badge = p.badge ? "<span class='tag pend'>"+esc(p.badge)+"</span>" : "";
+        var gift = p.gift_days > 0 ? "<span style='color:#16885a;font-size:12.5px'>（含赠送 "+p.gift_days+" 天）</span>" : "";
+        h += "<div class=item>";
+        h += "<div class=m>#"+p.id+" · key="+esc(p.key)+" · 排序 "+p.sort+"</div>";
+        h += "<div style='display:flex;align-items:center;gap:10px;flex-wrap:wrap'>";
+        h +=   "<div style='flex:1;min-width:160px'>";
+        h +=     "<div style='font-size:16px;font-weight:700'>"+esc(p.name)+" "+st+" "+badge+"</div>";
+        h +=     "<div class=muted style='margin-top:5px;font-size:13px'>";
+        h +=       p.days+" 天"+gift+" · <b style='color:#38415a'>"+fmtNum(p.price)+" 金币</b>";
+        if(p.intro) h += " · "+esc(p.intro);
+        h +=     "</div>";
+        h +=     "<div class=muted style='margin-top:4px;font-size:12px'>已售 "+p.sold+" 笔 · 收入 "+fmtNum(p.income)+" 金币</div>";
+        h +=   "</div>";
+        h +=   "</div>";
+        h += "<div style='margin-top:10px;display:flex;gap:8px;flex-wrap:wrap'>";
+        h +=   "<button class='btn2' style='padding:6px 13px;font-size:13px' onclick='vipPlanEdit("+p.id+")'>编辑</button>";
+        h +=   "<button class='btn2 g' style='padding:6px 13px;font-size:13px' onclick='vipPlanToggle("+p.id+")'>"+(p.enabled?"停用":"启用")+"</button>";
+        h +=   "<button class='btn2 r' style='padding:6px 13px;font-size:13px' onclick='vipPlanDel("+p.id+",\""+esc(p.name).replace(/"/g,'')+"\")'>删除</button>";
+        h += "</div>";
+        h += "</div>";
+      });
+    }
+    h += "</div>";
+    pane.innerHTML = h;
+  }catch(e){
+    pane.innerHTML = "<div class=empty>"+esc(e.message)+"</div>";
+  }
+}
+
+var _plansCache = [];
+async function vipPlanNew(){
+  vipPlanForm(null);
+}
+async function vipPlanEdit(id){
+  var d = await api("/api/admin/vip/plans");
+  var p = (d.items||[]).filter(function(x){return x.id===id;})[0];
+  if(!p){ tt("套餐不存在"); return; }
+  vipPlanForm(p);
+}
+function vipPlanForm(p){
+  var isNew = !p;
+  p = p || {name:"",days:30,gift_days:0,price:0,badge:"",intro:"",sort:99,enabled:true};
+  var h = "<div class=card><div class=sec-title style='margin-top:0'>"+(isNew?"➕ 新增套餐":"✏️ 编辑套餐")+"</div>";
+  h += "<div class=g2>";
+  h +=   "<div class=fld><label>套餐名称 *</label><input id=fName placeholder='如：月卡 / 季卡 / 半年卡' value=\""+esc(p.name)+"\"></div>";
+  h +=   "<div class=fld><label>价格（金币）*</label><input id=fPrice type=number step=0.01 min=0 value=\""+p.price+"\"></div>";
+  h +=   "<div class=fld><label>时长（天）*</label><input id=fDays type=number min=1 value=\""+p.days+"\"></div>";
+  h +=   "<div class=fld><label>额外赠送（天）</label><input id=fGift type=number min=0 value=\""+p.gift_days+"\"></div>";
+  h +=   "<div class=fld><label>角标文字</label><input id=fBadge placeholder='如：划算 / 最超值（留空不显示）' value=\""+esc(p.badge)+"\"></div>";
+  h +=   "<div class=fld><label>排序（小的在前）</label><input id=fSort type=number value=\""+p.sort+"\"></div>";
+  h += "</div>";
+  h += "<div class=fld style='margin-top:12px'><label>简介（可选）</label><input id=fIntro placeholder='一句话介绍' value=\""+esc(p.intro)+"\" style='width:100%'></div>";
+  h += "<div class=row style='margin-top:14px'>";
+  h +=   "<label style='display:flex;align-items:center;gap:7px;font-size:14px'><input type=checkbox id=fEnabled "+(p.enabled?"checked":"")+" style='width:auto'> 启用（取消勾选用户端看不到）</label>";
+  h += "</div>";
+  h += "<div class=row style='margin-top:16px'>";
+  h +=   "<button class=btn2 onclick='vipPlanSave("+(isNew?"null":p.id)+")'>保存</button>";
+  h +=   "<button class='btn2 g' onclick='vipPlanPane()'>取消</button>";
+  h += "</div>";
+  h += "<div id=fErr style='color:#d33;font-size:13px;margin-top:10px'></div>";
+  h += "</div>";
+  $("vipPane").innerHTML = h;
+  $("vipPane").scrollIntoView({behavior:"smooth", block:"start"});
+}
+async function vipPlanSave(id){
+  var name = ($("fName").value||"").trim();
+  var price = parseFloat($("fPrice").value);
+  var days = parseInt($("fDays").value);
+  var gift = parseInt($("fGift").value||"0")||0;
+  var badge = ($("fBadge").value||"").trim();
+  var intro = ($("fIntro").value||"").trim();
+  var sort = parseInt($("fSort").value||"99")||99;
+  var enabled = $("fEnabled").checked;
+
+  if(!name){ $("fErr").textContent="请填写套餐名称"; return; }
+  if(!(price>=0)){ $("fErr").textContent="价格必须 ≥ 0"; return; }
+  if(!(days>0)){ $("fErr").textContent="时长必须大于 0 天"; return; }
+
+  var body = {name:name, price:price, days:days, gift_days:gift,
+              badge:badge, intro:intro, sort:sort, enabled:enabled};
+  try{
+    if(id===null) await api("/api/admin/vip/plans",{method:"POST",body:body});
+    else await api("/api/admin/vip/plans/"+id,{method:"PUT",body:body});
+    tt(id===null?"套餐已创建":"已保存");
+    vipPlanPane();
+  }catch(e){
+    $("fErr").textContent = e.message;
+  }
+}
+async function vipPlanToggle(id){
+  try{
+    var d = await api("/api/admin/vip/plans/"+id+"/toggle",{method:"POST"});
+    tt(d.message||"已切换");
+    vipPlanPane();
+  }catch(e){ tt(e.message); }
+}
+async function vipPlanDel(id,name){
+  if(!confirm("确定删除套餐「"+(name||"")+"」？\n删除后用户端将不再显示。\n（已有订单的套餐无法删除，请改用「停用」）")) return;
+  try{
+    var d = await api("/api/admin/vip/plans/"+id,{method:"DELETE"});
+    tt(d.message||"已删除");
+    vipPlanPane();
+  }catch(e){ tt(e.message); }
+}
+
+/* ---------- 订单记录 ---------- */
+var _vipOrderPage = 1;
+async function vipOrderPane(pg){
+  _vipOrderPage = pg || 1;
+  var pane = $("vipPane");
+  pane.innerHTML = "<div class=empty>加载中…</div>";
+  try{
+    var d = await api("/api/admin/vip/orders?page="+_vipOrderPage+"&size=30");
+    var items = d.items || [];
+    var h = "<div class=sec-title>🧾 订单记录 <span class=muted style='font-weight:400;font-size:12.5px'>（共 "+d.total+" 笔，收入 "+fmtNum(d.income)+" 金币）</span></div>";
+    h += "<div class=card>";
+    if(!items.length){
+      h += "<div class=empty>还没有订单</div>";
+    }else{
+      items.forEach(function(o){
+        var t = o.created_at ? fmtTime(o.created_at) : "-";
+        h += "<div class=item>";
+        h += "<div class=m>#"+o.id+" · "+t+"</div>";
+        h += "<div style='display:flex;gap:10px;align-items:center;flex-wrap:wrap'>";
+        h +=   "<b>"+esc(o.username||("用户#"+o.user_id))+"</b>";
+        h +=   "<span style='color:#38415a'>"+esc(o.plan_name)+"</span>";
+        h +=   "<span class=tag appr>"+o.days+" 天</span>";
+        h +=   "<span style='margin-left:auto;font-weight:700;color:#c47c00'>"+fmtNum(o.price)+" 金币</span>";
+        h += "</div>";
+        if(o.after_expire) h += "<div class=muted style='margin-top:5px;font-size:12px'>到期时间 → "+fmtTime(o.after_expire)+"</div>";
+        h += "</div>";
+      });
+    }
+    // 分页
+    if(d.pages > 1){
+      h += "<div class=row style='justify-content:center;margin-top:14px'>";
+      for(var i=1;i<=d.pages && i<=10;i++){
+        h += "<button class='btn2"+(i===_vipOrderPage?"":" g")+"' style='padding:6px 12px;font-size:13px' onclick='vipOrderPane("+i+")'>"+i+"</button>";
+      }
+      h += "</div>";
+    }
+    h += "</div>";
+    pane.innerHTML = h;
+  }catch(e){
+    pane.innerHTML = "<div class=empty>"+esc(e.message)+"</div>";
+  }
+}
+
+/* ---------- 用户会员（原功能保留） ---------- */
+function vipUserPane(){
+  var h = "<div class=card><div class=sec-title style='margin-top:0'>💎 查询用户会员/余额</div>";
+  h += "<div class=row><input id=vuid placeholder='输入用户ID' style='flex:1;min-width:160px'><button class=btn2 onclick='queryVip()'>查询</button></div>";
+  h += "<div id=vinfo></div></div>";
+  h += "<div class='card hide' id=vset><div class=sec-title style='margin-top:0'>✏️ 修改余额 / 开通会员</div>";
+  h += "<div class=g2><div class=fld><label>设置余额（金币，支持小数）</label><input id=vb type=number step=0.01 value=0></div>";
+  h += "<div class=fld><label>追加会员（天）</label><input id=vd type=number value=30></div></div>";
+  h += "<div class=muted>留空或 0 表示不修改该项。</div><div style='margin-top:12px;display:flex;gap:9px'>";
+  h += "<button class=btn2 onclick='saveVip()'>保存</button>";
+  h += "<button class='btn2 r' onclick='clearVip()'>清除会员</button>";
+  h += "</div></div>";
+  $("vipPane").innerHTML = h;
+}
+var _vuid = null;
+async function queryVip(){
+  var id = $("vuid").value.trim();
+  if(!id){ tt("请输入用户ID"); return; }
+  try{
+    var d = await api("/api/admin/vip/"+id);
+    _vuid = id;
+    var vipTxt = d.vip_expire ? fmtTime(d.vip_expire) : "非会员";
+    var badge = d.is_vip ? "<span class='tag appr'>会员</span>" : "<span class='tag rej'>非会员</span>";
+    $("vinfo").innerHTML = "<div class=item><div class=m>用户 #"+id+" "+badge+"</div>"+
+      "<div style='font-size:15px'>"+esc(d.username||"")+" · 余额 <b>"+fmtNum(d.balance)+"</b> 金币</div>"+
+      "<div class=muted style='margin-top:5px'>会员到期："+vipTxt+"</div></div>";
+    $("vset").classList.remove("hide");
+    $("vb").value = d.balance || 0;
+  }catch(e){
+    $("vinfo").innerHTML = "<div class=empty>"+esc(e.message)+"</div>";
+    $("vset").classList.add("hide");
+  }
+}
+async function saveVip(){
+  if(!_vuid){ tt("请先查询用户"); return; }
+  var body = {};
+  var b = $("vb").value;
+  if(b!==""&&b!==null) body.balance = parseFloat(b);
+  var d = $("vd").value;
+  if(d) body.add_vip_days = parseInt(d);
+  try{
+    await api("/api/admin/vip/"+_vuid,{method:"POST",body:body});
+    tt("已保存");
+    queryVip();
+  }catch(e){ tt(e.message); }
+}
+async function clearVip(){
+  if(!_vuid){ tt("请先查询用户"); return; }
+  if(!confirm("确定清除该用户的会员？到期时间会被置空。")) return;
+  try{
+    await api("/api/admin/vip/"+_vuid,{method:"POST",body:{clear_vip:true}});
+    tt("会员已清除");
+    queryVip();
+  }catch(e){ tt(e.message); }
+}
+
+/* ===== 文件管理 ===== */
+R.files=async function(){
+  $("content").innerHTML="<div class=card><div id=fdirs><div class=empty>加载中...</div></div></div><div class=card id=fpanel class=hide></div>";
+  var dirs=await api("/api/admin/files/dirs");
+  $("fdirs").innerHTML="<div class=sec-title style='margin-top:0'>📁 上传目录</div><div class=grid>"+dirs.map(function(d){
+    return "<div class=stat style='cursor:pointer' onclick=\"openDir('"+d.sub+"')\"><div class=k>"+d.sub+"</div><div class=v style='font-size:20px'>"+d.count+"<small> 个文件</small></div><div class=muted style='margin-top:6px'>"+fmtSize(d.size)+"</div></div>";
+  }).join("")+"</div>";
+};
+async function openDir(sub){
+  var p=$("fpanel");p.classList.remove("hide");p.innerHTML="<div class=empty>加载中...</div>";
+  var d=await api("/api/admin/files?sub="+encodeURIComponent(sub));
+  var h="<div class=sec-title style='margin-top:0'>📄 "+esc(sub)+" （"+d.count+" 个） <button class='btn2 g' style='padding:4px 10px;font-size:12px;margin-left:8px' onclick=\"openDir('"+sub+"')\">刷新</button></div>";
+  if(!d.files.length){h+="<div class=empty>空目录</div>";}
+  else{
+    var isImg=(sub==="images"||sub==="avatars"||sub==="ads"||sub==="app_icons"||sub==="app_shots"||sub==="vipbg"||sub==="channels");
+    h+=d.files.map(function(f){
+      var prev=isImg?"<img src='"+f.url+"' style='width:40px;height:40px;object-fit:cover;border-radius:6px;border:1px solid #eee'>":"<div style='width:40px;text-align:center;font-size:20px'>📄</div>";
+      return "<div class=file-item>"+prev+"<div class=nm><div>"+esc(f.name)+"</div><div class=sz>"+fmtSize(f.size)+" · "+fmtTime(f.mtime)+"</div></div><button class='btn2 r' style='padding:5px 11px;font-size:12px' onclick=\"delFile('"+sub+"','"+esc(f.name).replace(/'/g,"\\'")+"')\">删除</button></div>";
+    }).join("");
+  }
+  p.innerHTML=h;
+}
+async function delFile(sub,name){
+  if(!confirm("确认删除文件 "+name+" ？不可恢复！"))return;
+  try{await api("/api/admin/files?sub="+encodeURIComponent(sub)+"&name="+encodeURIComponent(name),{method:"DELETE"});tt("已删除");openDir(sub);}catch(e){tt(e.message);}
+}
+</script><script>
+/* ===== 帖子管理 ===== */
+var _mst="";
+R.moments=async function(){
+  var h="<div class=card><div class=row>";
+  h+="<select id=mst onchange='_mst=this.value;R.moments()'>";
+  h+="<option value=''>全部</option><option value='pending'>待审核</option><option value='approved'>已通过</option><option value='rejected'>已驳回</option>";
+  h+="</select><button class='btn2 g' onclick='R.moments()'>刷新</button></div>";
+  h+="<div id=mlist><div class=empty>加载中...</div></div></div>";
+  $("content").innerHTML=h;
+  if($("mst"))$("mst").value=_mst;
+  await loadMoments();
+};
+async function loadMoments(){
+  var p="/api/admin/moments"+( _mst?("?status="+_mst):"");
+  var list=await api(p);
+  if(!list.length){$("mlist").innerHTML="<div class=empty>没有帖子</div>";return;}
+  $("mlist").innerHTML=list.map(function(m){
+    var imgs=(m.images||[]).map(function(u){return "<img class=img-t src='"+u+"'>";}).join("");
+    return "<div class=item><div class=m>#"+m.id+" · 作者:"+(m.user_id||m.author_id||"?")+" · "+fmtTime(m.created_at)+" "+statusTag(m.status)+"</div>"+
+    "<div style='font-weight:600;margin-bottom:4px'>"+esc(m.title||"(无标题)")+"</div>"+
+    "<div style='margin-bottom:6px'>"+esc(m.content||"")+"</div>"+imgs+
+    "<div style='margin-top:8px;display:flex;gap:6px'>"+
+    (m.status==="pending"?"<button class='btn2 k' style='padding:6px 12px;font-size:13px' onclick='rvM("+m.id+",1)'>通过</button><button class='btn2 r' style='padding:6px 12px;font-size:13px' onclick='rvM("+m.id+",0)'>驳回</button>":"")+
+    "<button class='btn2 r' style='padding:6px 12px;font-size:13px' onclick='delMoment("+m.id+")'>删除</button>"+
+    "</div></div>";
+  }).join("");
+}
+function statusTag(s){var c=s==="pending"?"pend":(s==="approved"?"appr":"rej");var t=s==="pending"?"待审":(s==="approved"?"已通过":"已驳回");return "<span class='tag "+c+"'>"+t+"</span>";}
+async function rvM(id,ok){
+  try{await api("/api/admin/moments/"+id+"/review",{method:"POST",body:{status:ok?"approved":"rejected"}});tt(ok?"已通过":"已驳回");loadMoments();}catch(e){tt(errMsg(e));}
+}
+async function delMoment(id){
+  if(!confirm("确认删除帖子 #"+id+" ？不可恢复！"))return;
+  try{await api("/api/admin/moments/"+id,{method:"DELETE"});tt("已删除");loadMoments();}catch(e){tt(errMsg(e));}
+}
+
+/* ===== 审核管理 ===== */
+R.audit=async function(){
+  var h="<div class=card><div class=sec-title style='margin-top:0'>✅ 内容审核（帖子 / 应用 / 频道）</div>";
+  h+="<div class=muted style='margin-bottom:12px'>审核端入口：<a href='/review' target='_blank'>/review</a>（审核员专用，需审核员账号登录）</div>";
+  h+="<div class=row><button class='btn2' onclick='loadAuditM()'>待审帖子</button><button class='btn2 g' onclick='loadAuditA()'>待审应用</button><button class='btn2' onclick='loadAuditT()'>待审工具</button><button class='btn2' onclick='loadAuditC()'>待审频道</button></div>";
+  h+="<div id=alist><div class=empty>请选择上方按钮</div></div></div>";
+  $("content").innerHTML=h;
+};
+async function loadAuditM(){
+  var list=await api("/api/admin/moments?status=pending");
+  if(!list.length){$("alist").innerHTML="<div class=empty>没有待审帖子</div>";return;}
+  $("alist").innerHTML=list.map(function(m){
+    var imgs=(m.images||[]).map(function(u){return "<img class=img-t src='"+u+"'>";}).join("");
+    return "<div class=item><div class=m>#"+m.id+" · 作者:"+(m.user_id||"?")+" · "+fmtTime(m.created_at)+"</div>"+
+    "<div style='font-weight:600'>"+esc(m.title||"(无标题)")+"</div><div>"+esc(m.content||"")+"</div>"+imgs+
+    "<div style='margin-top:8px'><button class='btn2 k' style='padding:6px 12px;font-size:13px' onclick='rvM("+m.id+",1)'>通过</button><button class='btn2 r' style='padding:6px 12px;font-size:13px' onclick='rvM("+m.id+",0)'>驳回</button></div></div>";
+  }).join("");
+}
+async function loadAuditA(){
+  var list=await api("/api/admin/apps?st=pending",{no401:true}).catch(function(){return null;});
+  if(!list){$("alist").innerHTML="<div class=empty>加载失败，请重试</div>";return;}
+  if(!list.length){$("alist").innerHTML="<div class=empty>没有待审应用</div>";return;}
+  $("alist").innerHTML=list.map(function(a){
+    var icon=a.icon?("<img src='"+a.icon+"' style='width:40px;height:40px;border-radius:8px;object-fit:cover;vertical-align:middle;margin-right:8px'>"):"";
+    var shots=(a.screenshots||[]).map(function(s){return "<img src='"+s+"' style='width:70px;height:70px;border-radius:6px;object-fit:cover;margin:4px 4px 0 0'>";}).join("");
+    return "<div class=item>"+
+      "<div class=m>#"+a.id+" · 上传者:"+esc(a.uploader_name||a.uploader_id||"?")+" · "+fmtTime(a.created_at)+"</div>"+
+      "<div style='display:flex;align-items:center'>"+icon+"<div><div style='font-weight:600'>"+esc(a.name||"")+" <span class=muted>"+esc(a.version||"")+"</span></div>"+
+      "<div class=muted>"+esc(a.package_name||"")+"</div></div></div>"+
+      (a.summary?"<div class=muted>"+esc(a.summary)+"</div>":"")+
+      (a.description?"<div style='font-size:13px;color:#666'>"+esc(a.description).slice(0,200)+"</div>":"")+
+      (shots?"<div style='margin-top:6px'>"+shots+"</div>":"")+
+      (a.apk_url||a.ext_link?"<div class=muted>包: "+esc(a.apk_url||a.ext_link)+"</div>":"")+
+      "<div style='margin-top:8px'><button class='btn2 k' style='padding:6px 12px;font-size:13px' onclick='rvApp("+a.id+",1)'>通过</button>"+
+      "<button class='btn2' style='padding:6px 12px;font-size:13px' onclick='editApp("+a.id+")'>编辑</button>"+
+      "<button class='btn2 r' style='padding:6px 12px;font-size:13px' onclick='rvApp("+a.id+",0)'>驳回</button>"+
+      "<button class='btn2' style='padding:6px 12px;font-size:13px' onclick='delApp("+a.id+")'>删除</button></div></div>";
+  }).join("");
+}
+async function rvApp(id,ok){
+  var body={action:ok?"approved":"rejected"};
+  if(!ok){var r=prompt("驳回理由（可留空）:");if(r===null)return;body.reason=r;}
+  try{await api("/api/admin/apps/"+id+"/review",{method:"POST",body:body});tt(ok?"已通过":"已驳回");loadAuditA();}catch(e){tt(errMsg(e));}
+}
+async function delApp(id){
+  if(!confirm("确认删除该应用？不可恢复！"))return;
+  try{await api("/api/admin/apps/"+id,{method:"DELETE"});tt("已删除");loadAuditA();}catch(e){tt(errMsg(e));}
+}
+/* ===== 频道审核 ===== */
+async function loadAuditC(){
+  var list=await api("/api/admin/channels?st=pending").catch(function(){return null;});
+  if(!list){$("alist").innerHTML="<div class=empty>加载失败，请重试</div>";return;}
+  if(!list.length){$("alist").innerHTML="<div class=empty>没有待审频道</div>";return;}
+  $("alist").innerHTML=list.map(function(c){
+    var img=c.image?("<img src='"+c.image+"' style='width:44px;height:44px;border-radius:10px;object-fit:cover;vertical-align:middle;margin-right:8px'>"):"";
+    var badge=c.status==="approved"?"<span style='color:#2ecc71'>已通过</span>":(c.status==="rejected"?"<span style='color:#e74c3c'>已驳回</span>":"<span style='color:#f39c12'>待审</span>");
+    return "<div class=item>"+
+      "<div class=m>#"+c.id+" · 创建者:"+c.owner_id+" · "+fmtTime(c.created_at)+" · "+badge+"</div>"+
+      "<div style='display:flex;align-items:center'>"+img+"<div><div style='font-weight:600'>"+esc(c.name||"")+"</div>"+
+      "<div class=muted>"+esc(c.intro||"")+"</div></div></div>"+
+      "<div class=muted>成员数: "+(c.member_count||0)+"</div>"+
+      "<div style='margin-top:8px'><button class='btn2 k' style='padding:6px 12px;font-size:13px' onclick='rvC("+c.id+",1)'>通过</button>"+
+      "<button class='btn2 r' style='padding:6px 12px;font-size:13px' onclick='rvC("+c.id+",0)'>驳回</button>"+
+      "<button class='btn2' style='padding:6px 12px;font-size:13px' onclick='delC("+c.id+")'>删除</button></div></div>";
+  }).join("");
+}
+async function rvC(id,ok){
+  try{await api("/api/admin/channels/"+id+"/review",{method:"POST",body:{action:ok?"approved":"rejected"}});tt(ok?"已通过":"已驳回");loadAuditC();}catch(e){tt(errMsg(e));}
+}
+async function delC(id){
+  if(!confirm("确认删除该频道？不可恢复！"))return;
+  try{await api("/api/admin/channels/"+id,{method:"DELETE"});tt("已删除");loadAuditC();}catch(e){tt(errMsg(e));}
+}
+
+
+/* ===== 举报管理 ===== */
+var _rst="pending";
+R.reports=async function(){
+  var h="<div class=card><div class=row>";
+  h+="<select id=rst onchange='_rst=this.value;R.reports()'>";
+  h+="<option value='pending'>待处理</option><option value='handled'>已处理</option><option value='dismissed'>已忽略</option><option value=''>全部</option>";
+  h+="</select><button class='btn2 g' onclick='R.reports()'>刷新</button></div>";
+  h+="<div id=rlist><div class=empty>加载中...</div></div></div>";
+  $("content").innerHTML=h;if($("rst"))$("rst").value=_rst;
+  await loadReports();
+};
+async function loadReports(){
+  var list=await api("/api/admin/reports?status="+_rst);
+  if(!list.length){$("rlist").innerHTML="<div class=empty>没有举报</div>";return;}
+  $("rlist").innerHTML=list.map(function(r){
+    return "<div class=item><div class=m>#"+r.id+" · 类型:"+esc(r.target_type)+" · 目标ID:"+r.target_id+" · 举报者:"+(r.reporter_id||"?")+" · "+fmtTime(r.created_at)+" "+statusTag(r.status)+"</div>"+
+    "<div style='font-weight:600'>"+esc(r.reason||"")+"</div>"+
+    (r.snapshot?"<div class=muted>内容："+esc(r.snapshot)+"</div>":"")+
+    (r.detail?"<div>"+esc(r.detail)+"</div>":"")+
+    "<div style='margin-top:8px'>"+(r.status==="pending"?
+      "<button class='btn2 g' style='padding:6px 12px;font-size:13px' onclick='hR("+r.id+",\"clean\")'>无违规</button><button class='btn2 k' style='padding:6px 12px;font-size:13px' onclick='hR("+r.id+",\"violation\")'>有违规并删除</button>":"")+
+    "</div></div>";
+  }).join("");
+}
+async function hR(id,v){
+  if(v==="violation"&&!confirm("确认判定【有违规】？被举报内容将被删除，不可恢复！"))return;
+  try{await api("/api/admin/reports/"+id+"/handle",{method:"POST",body:{verdict:v}});tt(v==="violation"?"已判定有违规并删除":"已忽略");loadReports();}catch(e){tt(e.message);}
+}
+</script><script>
+/* ===== 公告管理 ===== */
+R.notice=async function(){
+  var h="<div class=card><div class=sec-title style='margin-top:0'>📢 发布公告</div>";
+  h+="<div class=fld><label>标题</label><input id=an_t placeholder='公告标题'></div>";
+  h+="<div class=fld><label>内容</label><textarea id=an_c rows=3 style='width:100%' placeholder='公告内容'></textarea></div>";
+  h+="<div class=fld><label>指定版本（留空=所有版本）</label><input id=an_v placeholder='例如 8.0.5'></div>";
+  h+="<button class=btn2 onclick='addNotice()'>发布</button></div>";
+  h+="<div class=card><div class=sec-title style='margin-top:0'>📋 公告列表</div><div id=nlist><div class=empty>加载中...</div></div></div>";
+  $("content").innerHTML=h;await loadNotices();
+};
+async function loadNotices(){
+  var list=await api("/api/announcements").catch(function(){return [];});
+  if(!list.length){$("nlist").innerHTML="<div class=empty>暂无公告</div>";return;}
+  $("nlist").innerHTML=list.slice(0,30).map(function(a){
+    return "<div class=item><div class=m>#"+(a.id||"")+" · "+fmtTime(a.created_at)+(a.target_version?" · 版本 "+esc(a.target_version):"")+"</div>"+
+    "<div style='font-weight:600'>"+esc(a.title||"")+"</div><div>"+esc(a.content||"")+"</div>"+
+    "<div style='margin-top:8px'><button class='btn2 r' style='padding:5px 11px;font-size:13px' onclick='delNotice("+(a.id||0)+")'>删除</button></div></div>";
+  }).join("");
+}
+async function addNotice(){
+  var t=$("an_t").value.trim(),c=$("an_c").value.trim(),v=$("an_v").value.trim();
+  if(!t||!c){tt("请填写标题和内容");return;}
+  try{await api("/api/admin/announcements",{method:"POST",body:{title:t,content:c,target_version:v}});tt("已发布");$("an_t").value=$("an_c").value=$("an_v").value="";loadNotices();}catch(e){tt(e.message);}
+}
+async function delNotice(id){
+  if(!id){tt("无效ID");return;}
+  if(!confirm("确认删除该公告？"))return;
+  try{await api("/api/announcements/"+id,{method:"DELETE"});tt("已删除");loadNotices();}catch(e){tt(e.message);}
+}
+
+/* ===== 更新管理 ===== */
+R.update=async function(){
+  $("content").innerHTML="<div class=empty>加载中...</div>";
+  var d=await api("/api/app/version/admin");
+  var h="<div class=card><div class=sec-title style='margin-top:0'>🔄 版本更新配置</div>";
+  h+="<div class=g2><div class=fld><label>最新版本号</label><input id=uv_latest value=\""+esc(d.latest_version||"")+"\"></div>";
+  h+="<div class=fld><label>最低支持版本</label><input id=uv_min value=\""+esc(d.min_version||"")+"\"></div></div>";
+  h+="<div class=fld><label>下载地址</label><input id=uv_url value=\""+esc(d.download_url||"")+"\"></div>";
+  h+="<div class=fld><label>更新说明</label><textarea id=uv_log rows=3 style='width:100%'>"+esc(d.changelog||"")+"</textarea></div>";
+  h+="<div class=fld><label>提示文案</label><input id=uv_notice value=\""+esc(d.notice||"")+"\"></div>";
+  h+="<div class=fld><label><input type=checkbox id=uv_force "+(String(d.force)==="true"?"checked":"")+" style='width:auto'> 强制更新</label></div>";
+  h+="<button class=btn2 onclick='saveUpdate()'>保存配置</button></div>";
+  $("content").innerHTML=h;
+};
+async function saveUpdate(){
+  var body={
+    latest_version:$("uv_latest").value.trim(),
+    min_version:$("uv_min").value.trim(),
+    download_url:$("uv_url").value.trim(),
+    changelog:$("uv_log").value,
+    notice:$("uv_notice").value.trim(),
+    force:$("uv_force").checked?"true":"false"
+  };
+  try{await api("/api/app/version/admin",{method:"POST",body:body});tt("已保存");}catch(e){tt(e.message);}
+}
+
+/* ===== 广告管理 ===== */
+R.ads=async function(){
+  var h="<div class=card><div class=sec-title style='margin-top:0'>📣 新建广告</div>";
+  h+="<div class=g2><div class=fld><label>标题</label><input id=ad_t placeholder='广告标题'></div>";
+  h+="<div class=fld><label>图片URL</label><input id=ad_i placeholder='/uploads/ads/xxx.png 或 https://...'></div></div>";
+  h+="<div class=g2><div class=fld><label>跳转链接</label><input id=ad_l placeholder='点击跳转地址（可空）'></div>";
+  h+="<div class=fld><label>排序（越小越靠前）</label><input id=ad_s type=number value=0></div></div>";
+  h+="<button class=btn2 onclick='addAd()'>创建广告</button></div>";
+  h+="<div class=card><div class=sec-title style='margin-top:0'>📋 广告列表</div><div id=adlist><div class=empty>加载中...</div></div></div>";
+  $("content").innerHTML=h;await loadAds();
+};
+async function loadAds(){
+  var list=await api("/api/admin/ads").catch(function(){return [];});
+  if(!list||!list.length){$("adlist").innerHTML="<div class=empty>暂无广告</div>";return;}
+  $("adlist").innerHTML=list.map(function(a){
+    return "<div class=item><div style='display:flex;gap:10px;align-items:center'>"+
+    (a.image?"<img src='"+a.image+"' style='width:60px;height:60px;object-fit:cover;border-radius:8px;border:1px solid #eee'>":"")+
+    "<div style='flex:1'><div style='font-weight:600'>"+esc(a.title||"")+"</div><div class=muted>"+esc(a.link||"")+" · 排序 "+a.sort+" · "+(a.active?"<span class='tag appr'>生效</span>":"<span class='tag rej'>停用</span>")+"</div></div>"+
+    "<button class='btn2 g' style='padding:5px 11px;font-size:12px' onclick='toggleAd("+a.id+","+(a.active?"false":"true")+")'>"+(a.active?"停用":"启用")+"</button>"+
+    "<button class='btn2 r' style='padding:5px 11px;font-size:12px' onclick='delAd("+a.id+")'>删除</button></div></div>";
+  }).join("");
+}
+async function addAd(){
+  var t=$("ad_t").value.trim(),i=$("ad_i").value.trim();
+  if(!t){tt("请填写标题");return;}
+  try{await api("/api/admin/ads",{method:"POST",body:{title:t,image:i,link:$("ad_l").value.trim(),sort:parseInt($("ad_s").value)||0,active:true}});tt("已创建");$("ad_t").value=$("ad_i").value=$("ad_l").value="";loadAds();}catch(e){tt(e.message);}
+}
+async function toggleAd(id,active){
+  try{await api("/api/admin/ads/"+id,{method:"PUT",body:{active:active}});tt("已更新");loadAds();}catch(e){tt(e.message);}
+}
+async function delAd(id){
+  if(!confirm("确认删除该广告？"))return;
+  try{await api("/api/admin/ads/"+id,{method:"DELETE"});tt("已删除");loadAds();}catch(e){tt(e.message);}
+}
+
+
+/* ===== 卡密管理 + 定向消息（新增） ===== */
+function G(id){return document.getElementById(id);}
+R.reqem=async function(){
+  var h="\x3cdiv class=card\x3e\x3cdiv class=sec-title style=\x27margin-top:0\x27\x3e🎟️ 生成卡密\x3c/div\x3e";
+  h+="\x3cdiv class=g2\x3e";
+  h+="\x3cdiv class=fld\x3e\x3clabel\x3e数量\x3c/label\x3e\x3cinput id=rcount type=number value=10\x3e\x3c/div\x3e";
+  h+="\x3cdiv class=fld\x3e\x3clabel\x3e类型\x3c/label\x3e\x3cselect id=rkind\x3e\x3coption value=balance\x3e加余额\x3c/option\x3e\x3coption value=vip\x3e加会员天\x3c/option\x3e\x3c/select\x3e\x3c/div\x3e";
+  h+="\x3cdiv class=fld\x3e\x3clabel\x3e额度\x3c/label\x3e\x3cinput id=ramt type=number value=100\x3e\x3c/div\x3e";
+  h+="\x3cdiv class=fld\x3e\x3clabel\x3e有效期天空为永久\x3c/label\x3e\x3cinput id=rdays type=number\x3e\x3c/div\x3e";
+  h+="\x3cdiv class=fld\x3e\x3clabel\x3e格式模板\x3c/label\x3e\x3cinput id=rfmt value=\x27{seg4}-{seg4}-{seg4}\x27\x3e\x3c/div\x3e";
+  h+="\x3cdiv class=fld\x3e\x3clabel\x3e前缀\x3c/label\x3e\x3cinput id=rpfx value=\x27XD-\x27\x3e\x3c/div\x3e";
+  h+="\x3cdiv class=fld\x3e\x3clabel\x3e字符集\x3c/label\x3e\x3cselect id=rcharset\x3e\x3coption value=upper\x3e大写数字\x3c/option\x3e\x3coption value=mix\x3e混合\x3c/option\x3e\x3coption value=num\x3e纯数字\x3c/option\x3e\x3c/select\x3e\x3c/div\x3e";
+  h+="\x3cdiv class=fld\x3e\x3clabel\x3e批次\x3c/label\x3e\x3cinput id=rbatch\x3e\x3c/div\x3e";
+  h+="\x3cdiv class=fld\x3e\x3clabel\x3e备注\x3c/label\x3e\x3cinput id=rremark\x3e\x3c/div\x3e";
+  h+="\x3c/div\x3e";
+  h+="\x3cdiv class=muted style=\x27margin-top:8px\x27\x3e占位符 rand 整段随机 segN N位随机段\x3c/div\x3e";
+  h+="\x3cdiv style=\x27margin-top:12px\x27\x3e\x3cbutton class=btn2 onclick=\x27genCodes()\x27\x3e生成\x3c/button\x3e \x3cbutton class=\x27btn2 g\x27 onclick=\x27loadCodes()\x27\x3e刷新\x3c/button\x3e\x3c/div\x3e\x3c/div\x3e";
+  G("content").innerHTML=h;
+  loadCodes();
+};
+var _codes=[];
+async function loadCodes(){
+  var st=G("rfilter").value, kw=G("rkw").value.trim();
+  var q="/api/admin/redeem?limit=200";
+  if(st===""){}else{q+="&status="+st;}
+  if(kw)q+="&keyword="+encodeURIComponent(kw);
+  try{
+    var d=await api(q); _codes=d.items||[];
+    if(_codes.length===0){G("rlist").innerHTML="\x3cdiv class=empty\x3e没有卡密\x3c/div\x3e";return;}
+    var rows=_codes.map(function(c){
+      var kn=c.kind==="vip"?("会员+"+c.amount+"天"):("余额+"+c.amount);
+      var stt=c.status===0?"\x3cspan class=\x27tag pend\x27\x3e未用\x3c/span\x3e":"\x3cspan class=\x27tag appr\x27\x3e已用\x3c/span\x3e";
+      var exp=c.expire_at?fmtTime(c.expire_at):"永久"; var used=c.used_by_name?(" by "+c.used_by_name):"";
+      return "\x3cdiv class=item\x3e\x3cdiv class=m\x3e#"+c.id+" "+stt+" "+kn+" 批次:"+(c.batch||"-")+" 有效期:"+exp+used+"\x3c/div\x3e"+
+      "\x3cdiv style=\x27font-family:monospace;font-weight:600;word-break:break-all\x27\x3e"+esc(c.code)+"\x3c/div\x3e"+
+      "\x3cdiv style=\x27margin-top:6px;display:flex;gap:6px\x27\x3e"+
+      "\x3cbutton class=\x27btn2 k\x27 style=\x27padding:5px 11px;font-size:12px\x27 onclick=\x27disCode("+c.id+")\x27\x3e作废\x3c/button\x3e"+
+      "\x3cbutton class=\x27btn2 r\x27 style=\x27padding:5px 11px;font-size:12px\x27 onclick=\x27delCode("+c.id+")\x27\x3e删除\x3c/button\x3e\x3c/div\x3e\x3c/div\x3e";
+    }).join("");
+    G("rlist").innerHTML=rows;
+  }catch(e){G("rlist").innerHTML="\x3cdiv class=empty\x3e"+esc(e.message)+"\x3c/div\x3e";}
+}
+async function genCodes(){
+  var body={count:parseInt(G("rcount").value||10),kind:G("rkind").value,amount:parseInt(G("ramt").value||0),format:G("rfmt").value.trim(),prefix:G("rpfx").value.trim(),charset:G("rcharset").value,batch:G("rbatch").value.trim(),remark:G("rremark").value.trim()};
+  var d=G("rdays").value;if(d===""){}else{body.expire_days=parseInt(d);}
+  try{var r=await api("/api/admin/redeem/generate",{method:"POST",body:body});var codes=r.codes||[];showCdk(codes,body);tt("已生成 "+r.created+" 张");loadCodes();}catch(e){tt(errMsg(e));}
+}
+async function disCode(id){if(confirm("确认作废该卡密？")===false)return;try{await api("/api/admin/redeem/"+id+"/disable",{method:"POST"});tt("已作废");loadCodes();}catch(e){tt(errMsg(e));}}
+async function delCode(id){if(confirm("确认删除该卡密？不可恢复！")===false)return;try{await api("/api/admin/redeem/"+id,{method:"DELETE"});tt("已删除");loadCodes();}catch(e){tt(errMsg(e));}}
+function copyAllCodes(){var t=_codes.map(function(c){return c.code;}).join(String.fromCharCode(10));if(t===undefined||t===""){tt("无卡密");return;}var ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");tt("已复制 "+_codes.length+" 张");}catch(e){tt("复制失败");}document.body.removeChild(ta);}
+R.directmsg=async function(){
+  var h="\x3cdiv class=card\x3e\x3cdiv class=sec-title style=\x27margin-top:0\x27\x3e📢 发送定向消息\x3c/div\x3e";
+  h+="\x3cdiv class=g2\x3e";
+  h+="\x3cdiv class=fld\x3e\x3clabel\x3e接收账号（用户名或昵称）\x3c/label\x3e\x3cinput id=dmu placeholder=\x27如 xiaode2\x27\x3e\x3c/div\x3e";
+  h+="\x3cdiv class=fld\x3e\x3clabel\x3e或 用户ID\x3c/label\x3e\x3cinput id=dmuid type=number\x3e\x3c/div\x3e";
+  h+="\x3cdiv class=fld\x3e\x3clabel\x3e发送方显示名\x3c/label\x3e\x3cinput id=dmsender value=\x27官方团队\x27\x3e\x3c/div\x3e";
+  h+="\x3c/div\x3e";
+  h+="\x3cdiv class=fld\x3e\x3clabel\x3e标题\x3c/label\x3e\x3cinput id=dmtitle\x3e\x3c/div\x3e";
+  h+="\x3cdiv class=fld\x3e\x3clabel\x3e内容\x3c/label\x3e\x3ctextarea id=dmcontent rows=5 style=\x27width:100%\x27\x3e\x3c/textarea\x3e\x3c/div\x3e";
+  h+="\x3cdiv style=\x27margin-top:12px\x27\x3e\x3cbutton class=btn2 onclick=\x27sendDm()\x27\x3e发送\x3c/button\x3e \x3cbutton class=\x27btn2 g\x27 onclick=\x27sendDmAll()\x27\x3e发给全部用户\x3c/button\x3e\x3c/div\x3e\x3c/div\x3e";
+  h+="\x3cdiv class=card\x3e\x3cdiv class=sec-title style=\x27margin-top:0\x27\x3e📨 已发消息\x3c/div\x3e\x3cdiv id=dmlist\x3e\x3cdiv class=empty\x3e加载中...\x3c/div\x3e\x3c/div\x3e\x3c/div\x3e";
+  G("content").innerHTML=h;
+  loadDms();
+};
+async function sendDm(){
+  var body={username:G("dmu").value.trim(),user_id:G("dmuid").value.trim(),sender:G("dmsender").value.trim(),title:G("dmtitle").value.trim(),content:G("dmcontent").value.trim()};
+  if(body.title===""&&body.content===""){tt("标题和内容不能都为空");return;}
+  try{await api("/api/admin/messages/send",{method:"POST",body:body});tt("已发送");loadDms();}catch(e){tt(errMsg(e));}
+}
+async function sendDmAll(){
+  var body={all:true,sender:G("dmsender").value.trim(),title:G("dmtitle").value.trim(),content:G("dmcontent").value.trim()};
+  if(body.title===""&&body.content===""){tt("标题和内容不能都为空");return;}
+  if(confirm("确认群发给全部用户？")===false)return;
+  try{var r=await api("/api/admin/messages/send_bulk",{method:"POST",body:body});tt("已发送给 "+r.sent+" 人");loadDms();}catch(e){tt(errMsg(e));}
+}
+async function loadDms(){
+  try{
+    var d=await api("/api/admin/messages?limit=100");
+    var items=d.items||[];
+    if(items.length===0){G("dmlist").innerHTML="\x3cdiv class=empty\x3e暂无消息\x3c/div\x3e";return;}
+    G("dmlist").innerHTML=items.map(function(m){
+      var rd=m.is_read?"\x3cspan class=\x27tag appr\x27\x3e已读\x3c/span\x3e":"\x3cspan class=\x27tag pend\x27\x3e未读\x3c/span\x3e";
+      return "\x3cdiv class=item\x3e\x3cdiv class=m\x3e#"+m.id+" → "+esc(m.to)+" "+rd+" "+fmtTime(m.created_at)+"\x3c/div\x3e"+
+      "\x3cdiv style=\x27font-weight:600\x27\x3e"+esc(m.title||"\x3e无标题\x3c")+"\x3c/div\x3e"+
+      "\x3cdiv\x3e"+esc(m.content)+"\x3c/div\x3e"+
+      "\x3cdiv class=muted\x3e发送方:"+esc(m.sender)+"\x3c/div\x3e"+
+      "\x3cdiv style=\x27margin-top:6px\x27\x3e\x3cbutton class=\x27btn2 r\x27 style=\x27padding:5px 11px;font-size:12px\x27 onclick=\x27delDm("+m.id+")\x27\x3e删除\x3c/button\x3e\x3c/div\x3e\x3c/div\x3e";
+    }).join("");
+  }catch(e){G("dmlist").innerHTML="\x3cdiv class=empty\x3e"+esc(e.message)+"\x3c/div\x3e";}
+}
+async function delDm(id){if(confirm("确认删除该消息？")===false)return;try{await api("/api/admin/messages/"+id,{method:"DELETE"});tt("已删除");loadDms();}catch(e){tt(errMsg(e));}}
+
+var _lastCdk="";
+function showCdk(codes,body){
+  _lastCdk=codes.join(String.fromCharCode(10));
+  var kind=body.kind==="vip"?("会员+"+body.amount+"天"):("余额+"+body.amount);
+  document.getElementById("cdkInfo").textContent="共 "+codes.length+" 张 · "+kind+(body.batch?(" · 批次:"+body.batch):"");
+  document.getElementById("cdkTa").value=_lastCdk;
+  document.getElementById("cdkMask").classList.add("on");
+}
+function closeCdk(){document.getElementById("cdkMask").classList.remove("on");}
+function copyCdk(){
+  var ta=document.getElementById("cdkTa");ta.select();ta.setSelectionRange(0,999999);
+  var ok=false;
+  try{ok=document.execCommand("copy");}catch(e){}
+  if(ok){tt("已复制 "+_lastCdk.split(String.fromCharCode(10)).length+" 张卡密");return;}
+  if(navigator.clipboard){navigator.clipboard.writeText(_lastCdk).then(function(){tt("已复制");},function(){tt("复制失败，请长按选择");});return;}
+  tt("请长按选择复制");
+}
+/* ===== 启动 ===== */
+(function(){
+  document.addEventListener("DOMContentLoaded",function(){
+    newCap();
+    var lp=document.getElementById("lp");
+    if(lp)lp.addEventListener("keydown",function(e){if(e.key==="Enter")doLogin();});
+    var lc=document.getElementById("lc");
+    if(lc)lc.addEventListener("keydown",function(e){if(e.key==="Enter")doLogin();});
+    if(TK){fetch("/api/auth/me",{headers:{"Authorization":"Bearer "+TK}}).then(function(r){return r.json();}).then(function(me){if(me&&me.is_admin){ME=me;enter();}else{logout();}}).catch(function(){logout();});}
+  });
+})();
+
+/* ==================================================================
+ *  新增管理功能 v9.7（评论/封禁/公告/通知/看板/总览/管理员/应用编辑）
+ * ================================================================== */
+
+/* ---------- 📈 数据看板 ---------- */
+R.board=async function(){
+  $("content").innerHTML="<div class=empty>加载中...</div>";
+  var d=await api("/api/admin/dashboard?days=14").catch(function(){return null;});
+  if(!d){$("content").innerHTML="<div class=empty>加载失败</div>";return;}
+  var maxU=Math.max.apply(null,d.users.concat([1]));
+  var maxM=Math.max.apply(null,d.moments.concat([1]));
+  var maxv=Math.max(maxU,maxM);
+  var h="";
+  h+="<div class=card><div class=sec-title style='margin-top:0'>📈 近 14 日趋势</div>";
+  h+="<div style='display:flex;align-items:flex-end;gap:4px;height:160px;padding:8px 0'>";
+  var bars="";
+  for(var i=0;i<d.labels.length;i++){
+    var hu=Math.round(d.users[i]/maxv*130);
+    var hm=Math.round(d.moments[i]/maxv*130);
+    bars+="<div style='flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:2px'>"+
+      "<div style='display:flex;gap:2px;align-items:flex-end'>"+
+      "<div title='新增用户 "+d.users[i]+"' style='width:9px;height:"+hu+"px;background:#7C5CFF;border-radius:3px 3px 0 0'></div>"+
+      "<div title='发帖 "+d.moments[i]+"' style='width:9px;height:"+hm+"px;background:#b9a6ff;border-radius:3px 3px 0 0'></div>"+
+      "</div><div style='font-size:9px;color:#999;white-space:nowrap'>"+d.labels[i]+"</div></div>";
+  }
+  h+=bars+"</div>";
+  h+="<div class=muted style='margin-top:6px'><span style='display:inline-block;width:10px;height:10px;background:#7C5CFF;border-radius:2px'></span> 新增用户 &nbsp; <span style='display:inline-block;width:10px;height:10px;background:#b9a6ff;border-radius:2px'></span> 新增帖子</div>";
+  h+="</div>";
+  h+="<div class=grid>";
+  h+="<div class=stat><div class=k>用户总数</div><div class='v accent'>"+d.total_users+"</div></div>";
+  h+="<div class=stat><div class=k>帖子总数</div><div class=v>"+d.total_moments+"</div></div>";
+  h+="<div class=stat><div class=k>应用总数</div><div class=v>"+d.total_apps+"</div></div>";
+  h+="<div class=stat><div class=k>已封禁用户</div><div class=v>"+d.banned_users+"</div></div>";
+  h+="</div>";
+  $("content").innerHTML=h;
+};
+
+/* ---------- 🗂️ 内容总览 ---------- */
+R.content=async function(){
+  var h="<div class=card><div class=row>";
+  h+="<input id=cskw placeholder='搜索帖子/评论/应用内容' style='flex:1;min-width:180px' value=\""+esc(_cskw)+"\">";
+  h+="<button class=btn2 onclick='doCSearch()'>搜索</button>";
+  h+="</div></div><div id=csres><div class=empty>输入关键词搜索</div></div>";
+  $("content").innerHTML=h;
+  if(_cskw) await doCSearch();
+};
+var _cskw="";
+async function doCSearch(){
+  _cskw=$("cskw").value.trim();
+  if(!_cskw){tt("请输入关键词");return;}
+  $("csres").innerHTML="<div class=empty>搜索中...</div>";
+  var d=await api("/api/admin/content/search?q="+encodeURIComponent(_cskw)).catch(function(){return null;});
+  if(!d){$("csres").innerHTML="<div class=empty>搜索失败</div>";return;}
+  var h="";
+  h+="<div class=sec-title>📝 帖子（"+d.moments.length+"）</div><div class=card>";
+  if(!d.moments.length)h+="<div class=empty>无</div>";
+  d.moments.forEach(function(m){
+    h+="<div class=item><div class=m>#"+m.id+" · 用户"+m.user_id+" · "+fmtTime(m.created_at)+" "+statusTag(m.status)+"</div>"+
+      "<div style='font-weight:600'>"+esc(m.title||"(无标题)")+"</div><div class=muted>"+esc(m.content)+"</div></div>";
+  });
+  h+="</div>";
+  h+="<div class=sec-title>💬 评论（"+d.comments.length+"）</div><div class=card>";
+  if(!d.comments.length)h+="<div class=empty>无</div>";
+  d.comments.forEach(function(c){
+    h+="<div class=item><div class=m>#"+c.id+" · 帖子"+c.moment_id+" · 用户"+c.user_id+" · "+fmtTime(c.created_at)+"</div>"+
+      "<div>"+esc(c.content)+"</div>"+
+      "<div style='margin-top:6px'><button class='btn2 r' style='padding:4px 10px;font-size:12px' onclick='delComment("+c.id+",1)'>删除评论</button></div></div>";
+  });
+  h+="</div>";
+  h+="<div class=sec-title>🧩 应用（"+d.apps.length+"）</div><div class=card>";
+  if(!d.apps.length)h+="<div class=empty>无</div>";
+  d.apps.forEach(function(a){
+    h+="<div class=item><div class=m>#"+a.id+" · 上传者"+a.uploader_id+" · "+fmtTime(a.created_at)+"</div>"+
+      "<div style='font-weight:600'>"+esc(a.name)+"</div><div class=muted>"+esc(a.summary)+"</div></div>";
+  });
+  h+="</div>";
+  $("csres").innerHTML=h;
+}
+
+/* ---------- 💬 评论管理 ---------- */
+var _ckw="";
+R.comments=async function(){
+  var h="<div class=card><div class=row>";
+  h+="<input id=ckw placeholder='搜索评论内容' style='flex:1;min-width:180px' value=\""+esc(_ckw)+"\">";
+  h+="<button class=btn2 onclick='doCS()'>搜索</button>";
+  h+="<button class='btn2 g' onclick='_ckw=\"\";R.comments()'>重置</button>";
+  h+="</div><div id=clist><div class=empty>加载中...</div></div></div>";
+  $("content").innerHTML=h;await loadComments();
+};
+async function loadComments(){
+  var p="/api/admin/comments?limit=200";
+  if(_ckw)p+="&keyword="+encodeURIComponent(_ckw);
+  var list=await api(p).catch(function(){return [];});
+  if(!list.length){$("clist").innerHTML="<div class=empty>没有评论</div>";return;}
+  $("clist").innerHTML=list.map(function(c){
+    return "<div class=item><div class=m>#"+c.id+" · 帖子"+c.moment_id+" · "+esc(c.username)+"(用户"+c.user_id+") · "+fmtTime(c.created_at)+(c.parent_id?" · 回复#"+c.parent_id:"")+"</div>"+
+      "<div style='margin:4px 0'>"+esc(c.content)+"</div>"+
+      "<div><button class='btn2 r' style='padding:5px 12px;font-size:13px' onclick='delComment("+c.id+")'>删除</button></div></div>";
+  }).join("");
+}
+function doCS(){_ckw=$("ckw").value.trim();loadComments();}
+async function delComment(id,noReload){
+  if(!confirm("确认删除该评论？不可恢复！"))return;
+  try{await api("/api/admin/comments/"+id,{method:"DELETE"});tt("已删除");if(!noReload)loadComments();else doCSearch();}catch(e){tt(e.message);}
+}
+
+/* ---------- 🚫 封禁管理 ---------- */
+R.ban=async function(){
+  var h="<div class=card><div class=row>";
+  h+="<input id=bkw placeholder='搜索用户名/昵称' style='flex:1;min-width:180px'>";
+  h+="<button class=btn2 onclick='loadBanList()'>搜索</button>";
+  h+="</div><div id=blist><div class=empty>加载中...</div></div></div>";
+  $("content").innerHTML=h;await loadBanList();
+};
+async function loadBanList(){
+  var kw=$("bkw")?$("bkw").value.trim():"";
+  var p="/api/admin/users?limit=500";
+  if(kw)p+="&keyword="+encodeURIComponent(kw);
+  var list=await api(p).catch(function(){return [];});
+  if(!list.length){$("blist").innerHTML="<div class=empty>没有用户</div>";return;}
+  $("blist").innerHTML=list.map(function(u){
+    var st=u.is_banned?"<span class='tag rej'>已封禁</span>":"<span class='tag appr'>正常</span>";
+    return "<div class=item><div class=m><b>#"+u.id+"</b> "+esc(u.username)+" · "+esc(u.nickname||"")+" "+st+(u.is_admin?" <span class='tag pend'>管理员</span>":"")+"</div>"+
+      (u.ban_reason?"<div class=muted>封禁理由："+esc(u.ban_reason)+"</div>":"")+
+      (u.is_banned?("<div class=muted>"+(u.ban_until?("解封时间："+fmtTime(u.ban_until)):"永久封禁")+"</div>"):"")+
+      "<div style='margin-top:8px;display:flex;gap:6px'>"+
+      (u.is_banned
+        ? "<button class='btn2 g' style='padding:6px 12px;font-size:13px' onclick='banUser("+u.id+",0)'>解封</button>"
+        : "<button class='btn2 k' style='padding:6px 12px;font-size:13px' onclick='banUser("+u.id+",1)'>封禁</button>")+
+      "</div></div>";
+  }).join("");
+}
+async function banUser(id,ban){
+  var reason="",days=0;
+  if(ban){
+    var d=prompt("封禁天数（留空或 0 = 永久封禁）:","");
+    if(d===null)return;
+    d=(d||"").trim();
+    if(d!==""){days=parseInt(d,10);if(isNaN(days)||days<0)days=0;}
+    reason=prompt("封禁理由（可留空）:");
+    if(reason===null)return;
+  } else {
+    if(!confirm("确认解封该用户？"))return;
+  }
+  try{
+    await api("/api/admin/users/"+id+"/ban",{method:"POST",body:{ban:!!ban,reason:reason,days:days}});
+    tt(ban?(days>0?("已封禁 "+days+" 天"):"已永久封禁"):"已解封");
+    if(CUR==="ban")loadBanList();else if(CUR==="users")loadUsers();
+  }catch(e){tt(e.message);}
+}
+
+/* ---------- 🔔 通知管理 ---------- */
+R.notifs=async function(){
+  var h="<div class=card><div class=row>";
+  h+="<input id=nkw placeholder='搜索通知内容' style='flex:1;min-width:180px'>";
+  h+="<button class=btn2 onclick='loadNotifs()'>搜索</button>";
+  h+="</div><div id=nflist><div class=empty>加载中...</div></div></div>";
+  $("content").innerHTML=h;await loadNotifs();
+};
+async function loadNotifs(){
+  var kw=$("nkw")?$("nkw").value.trim():"";
+  var p="/api/admin/notifications?limit=200";
+  if(kw)p+="&keyword="+encodeURIComponent(kw);
+  var list=await api(p).catch(function(){return [];});
+  if(!list.length){$("nflist").innerHTML="<div class=empty>没有通知</div>";return;}
+  $("nflist").innerHTML=list.map(function(n){
+    return "<div class=item><div class=m>#"+n.id+" · 接收:"+esc(n.user_name)+"(#"+n.user_id+") · 触发:"+esc(n.actor_name)+" · "+esc(n.type)+" · "+fmtTime(n.created_at)+(n.is_read?" · 已读":" · <b>未读</b>")+"</div>"+
+      "<div style='margin:4px 0'>"+esc(n.content)+"</div>"+
+      "<div><button class='btn2 r' style='padding:5px 12px;font-size:13px' onclick='delNotif("+n.id+")'>删除</button></div></div>";
+  }).join("");
+}
+async function delNotif(id){
+  if(!confirm("确认删除该通知？"))return;
+  try{await api("/api/admin/notifications/"+id,{method:"DELETE"});tt("已删除");loadNotifs();}catch(e){tt(e.message);}
+}
+
+/* ---------- 🔑 管理员管理 ---------- */
+R.admins=async function(){
+  var h="<div class=card><div class=sec-title style='margin-top:0'>🔑 管理员列表</div><div id=admlist><div class=empty>加载中...</div></div></div>";
+  $("content").innerHTML=h;await loadAdmins();
+};
+async function loadAdmins(){
+  var list=await api("/api/admin/admins").catch(function(){return [];});
+  if(!list.length){$("admlist").innerHTML="<div class=empty>没有管理员</div>";return;}
+  $("admlist").innerHTML=list.map(function(u){
+    return "<div class=item><div class=m><b>#"+u.id+"</b> "+esc(u.username)+" · "+esc(u.nickname||"")+"</div>"+
+      "<div class=muted style='margin-bottom:8px'>注册 "+fmtTime(u.created_at)+"</div>"+
+      "<div style='display:flex;gap:6px;flex-wrap:wrap'>"+
+      "<button class='btn2 g' style='padding:6px 12px;font-size:13px' onclick='setAdmPwd("+u.id+")'>重置密码</button>"+
+      (u.id===(ME&&ME.id)?"":'<button class="btn2 r" style="padding:6px 12px;font-size:13px" onclick="revokeAdm('+u.id+')">取消管理员</button>')+
+      "</div></div>";
+  }).join("");
+}
+async function setAdmPwd(id){
+  var np=prompt("输入新密码（≥6位）:");if(!np)return;
+  if(np.length<6){tt("密码至少6位");return;}
+  try{await api("/api/admin/admins/"+id+"/password",{method:"POST",body:{password:np}});tt("密码已重置");}catch(e){tt(e.message);}
+}
+async function revokeAdm(id){
+  if(!confirm("确认取消该用户的管理员身份？"))return;
+  try{await api("/api/admin/admins/"+id+"/revoke",{method:"POST"});tt("已取消");loadAdmins();}catch(e){tt(e.message);}
+}
+
+/* ---------- 🖼️ 应用编辑弹窗 ---------- */
+async function editApp(id){
+  var list=await api("/api/admin/apps?limit=500").catch(function(){return [];});
+  var a=null;for(var i=0;i<list.length;i++)if(list[i].id===id)a=list[i];
+  if(!a){tt("应用不存在");return;}
+  var h="<div class=mask on id=appMask><div class=modal style='max-width:560px'>";
+  h+="<div class=sec-title style='margin-top:0'>🖼️ 编辑应用 #"+a.id+"</div>";
+  h+="<div class=fld><label>应用名</label><input id=ea_name value=\""+esc(a.name)+"\"></div>";
+  h+="<div class=fld><label>包名</label><input id=ea_pkg value=\""+esc(a.package_name)+"\"></div>";
+  h+="<div class=fld><label>版本</label><input id=ea_ver value=\""+esc(a.version)+"\"></div>";
+  h+="<div class=fld><label>分类</label><input id=ea_cat value=\""+esc(a.category)+"\"></div>";
+  h+="<div class=fld><label>简介</label><input id=ea_sum value=\""+esc(a.summary)+"\"></div>";
+  h+="<div class=fld><label>图标 URL</label><input id=ea_icon value=\""+esc(a.icon)+"\"></div>";
+  h+="<div class=fld><label>截图 URL（逗号分隔）</label><textarea id=ea_shots rows=2>"+esc((a.screenshots||[]).join(","))+"</textarea></div>";
+  h+="<div class=fld><label>详细描述</label><textarea id=ea_desc rows=3>"+esc(a.description)+"</textarea></div>";
+  h+="<div class=fld><label>下载地址/外链</label><input id=ea_link value=\""+esc(a.ext_link||a.apk_url)+"\"></div>";
+  h+="<div class=row style='justify-content:flex-end'><button class='btn2 g' onclick='closeMask(\"appMask\")'>取消</button><button class=btn2 onclick='saveApp("+a.id+")'>保存</button></div>";
+  h+="</div></div>";
+  document.body.insertAdjacentHTML("beforeend",h);
+}
+function closeMask(id){var e=$(id);if(e)e.remove();}
+async function saveApp(id){
+  var body={
+    name:$("ea_name").value,package_name:$("ea_pkg").value,version:$("ea_ver").value,
+    category:$("ea_cat").value,summary:$("ea_sum").value,icon:$("ea_icon").value,
+    screenshots:$("ea_shots").value.split(",").map(function(x){return x.trim();}).filter(function(x){return x;}),
+    description:$("ea_desc").value,ext_link:$("ea_link").value
+  };
+  try{await api("/api/admin/apps/"+id,{method:"PUT",body:body});tt("已保存");closeMask("appMask");if(CUR==="audit")loadAuditA();}catch(e){tt(errMsg(e));}
+}
+
+</script>
+<div id="cdkMask"><div id="cdkBox">
+  <div class="hd"><b>生成成功</b><button class="cdkX" onclick="closeCdk()">&#215;</button></div>
+  <div class="bd"><div style="color:#6b7488;font-size:13px;margin-bottom:10px" id="cdkInfo"></div>
+  <textarea id="cdkTa" readonly></textarea></div>
+  <div class="ft"><button class="btn2 g" onclick="closeCdk()">关闭</button>
+  <button class="btn2" onclick="copyCdk()">一键复制</button></div>
+</div></div>
+<script src="/static/admin_tools.js"></script>
+<script src="/static/admin_reviewers.js"></script>
+<script src="/static/admin_loginlogs.js"></script>
+<script src="/static/admin_resources.js"></script>
+<script src="/static/admin_splash.js"></script>
+</body>
+</html>

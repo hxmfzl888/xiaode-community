@@ -84,3 +84,43 @@ tmp/
 temp/
 *.tmp
 .cache/
+
+# ============ 后端相关 ============
+backend/.env
+backend/*.db
+backend/*.db.*
+backend/uploads/
+backend/venv/
+backend/__pycache__/
+
+# ============ 签名与密钥 ============
+xiaode.keystore
+*.jks
+*.keystore
+local.properties
+
+# ============ 构建产物 ============
+*.apk
+*.aab
+*.ap_
+app/build/
+build/
+
+# ============ 备份与临时 ============
+*.bak
+*.bak.*
+.bak*/
+.bak_*/
+_backup_*/
+.gradle/
+patch*.py
+
+# ============ 大图（源文件，非必需）============
+icon_src.png
+1791703374781.png
+
+# ============ 编辑器 ============
+.idea/
+.vscode/
+*.swp
+.DS_Store

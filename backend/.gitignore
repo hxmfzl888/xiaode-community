@@ -1,0 +1,33 @@
+# 环境变量（含密钥，绝不提交）
+.env
+
+# 数据库
+*.db
+*.db.*
+*.sqlite3
+
+# 用户上传（含真实用户数据）
+uploads/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+venv/
+.venv/
+
+# 临时脚本
+patch*.py
+test_api.py
+
+# 备份
+*.bak
+*.bak.*
+_backup_*/
+_bak_*/
+
+# 编辑器
+.idea/
+.vscode/
+*.swp
+.DS_Store

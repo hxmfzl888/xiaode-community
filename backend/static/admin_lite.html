@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="format-detection" content="telephone=no">
+<title>小德社区 · 审核台</title><!-- LITE_V2_FIX1 -->
+<style>
+* { -webkit-box-sizing: border-box; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body {
+  margin: 0; padding: 0;
+  background: #f2f0fa;
+  color: #1a1730;
+  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* ---------- 登录页 ---------- */
+#loginWrap {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: #6C5CE7;
+  background: -webkit-linear-gradient(top left, #6C5CE7, #A29BFE);
+  background: linear-gradient(135deg, #6C5CE7, #A29BFE);
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-box-align: center; -webkit-align-items: center; align-items: center;
+  -webkit-box-pack: center; -webkit-justify-content: center; justify-content: center;
+  padding: 20px;
+}
+.login-box {
+  width: 100%; max-width: 340px;
+  background: #fff;
+  border-radius: 18px;
+  padding: 30px 24px 26px;
+  box-shadow: 0 16px 48px rgba(60, 45, 160, 0.28);
+}
+.login-logo {
+  width: 56px; height: 56px; line-height: 56px;
+  margin: 0 auto 14px;
+  background: #6C5CE7;
+  background: -webkit-linear-gradient(top left, #6C5CE7, #F368E0);
+  background: linear-gradient(135deg, #6C5CE7, #F368E0);
+  border-radius: 16px;
+  color: #fff; font-size: 26px; font-weight: 700; text-align: center;
+}
+.login-title { text-align: center; font-size: 19px; font-weight: 700; margin: 0 0 4px; }
+.login-sub { text-align: center; font-size: 12.5px; color: #8b87a3; margin: 0 0 22px; }
+.field { margin-bottom: 13px; }
+.field label { display: block; font-size: 12.5px; color: #6b6785; margin-bottom: 6px; font-weight: 600; }
+.field input {
+  width: 100%; height: 44px; padding: 0 13px;
+  border: 1px solid #e2def5; border-radius: 11px;
+  background: #faf9fe; color: #1a1730;
+  font-size: 15px; outline: none;
+  -webkit-appearance: none;
+}
+.field input:focus { border-color: #6C5CE7; background: #fff; }
+.btn-main {
+  width: 100%; height: 46px; margin-top: 8px;
+  background: #6C5CE7;
+  background: -webkit-linear-gradient(left, #6C5CE7, #8b7bf0);
+  background: linear-gradient(90deg, #6C5CE7, #8b7bf0);
+  border: none; border-radius: 11px;
+  color: #fff; font-size: 16px; font-weight: 600;
+  cursor: pointer; outline: none;
+  -webkit-appearance: none;
+}
+.btn-main:active { opacity: 0.85; }
+.btn-main[disabled] { opacity: 0.55; }
+.login-err {
+  margin-top: 12px; padding: 9px 12px;
+  background: #fdecea; border: 1px solid #f5c6cb;
+  border-radius: 9px; color: #c0392b; font-size: 13px;
+  display: none;
+}
+
+/* ---------- 主界面 ---------- */
+#app { display: none; padding-bottom: 70px; }
+.topbar {
+  position: fixed; top: 0; left: 0; right: 0; height: 52px;
+  background: #fff; border-bottom: 1px solid #eae7f7;
+  display: -webkit-box; display: -webkit-flex; display: flex;
+  -webkit-box-align: center; -webkit-align-items: center; align-items: center;
+  padding: 0 14px; z-index: 100;
+}
+.topbar .ttl { font-size: 16.5px; font-weight: 700; -webkit-box-flex: 1; -webkit-flex: 1; flex: 1; }
+.topbar .who { font-size: 12px; color: #8b87a3; margin-right: 10px; }
+.btn-out {
+  height: 30px; padding: 0 13px;
+  background: #f3f1fb; border: 1px solid #e2def5;
+  border-radius: 15px; color: #6C5CE7;
+  font-size: 12.5px; font-weight: 600;
+  cursor: pointer; outline: none;
+  -webkit-appearance: none;
+}
+.content { padding: 62px 12px 10px; }
+
+/* 统计 */
+.stats {
+  display: -webkit-box; display: -webkit-flex; display: flex;
+  margin-bottom: 12px;
+}
+.stat {
+  -webkit-box-flex: 1; -webkit-flex: 1; flex: 1;
+  background: #fff; border-radius: 13px;
+  padding: 13px 6px; text-align: center;
+  margin-right: 8px; border: 1px solid #eae7f7;
+}
+.stat:last-child { margin-right: 0; }
+.stat .n { font-size: 21px; font-weight: 700; color: #6C5CE7; line-height: 1.25; }
+.stat .l { font-size: 11.5px; color: #8b87a3; margin-top: 2px; }
+.stat.red .n { color: #e74c3c; }
+
+/* 标签切换 */
+.tabs {
+  display: -webkit-box; display: -webkit-flex; display: flex;
+  background: #fff; border-radius: 12px; padding: 4px;
+  margin-bottom: 12px; border: 1px solid #eae7f7;
+}
+.tab {
+  -webkit-box-flex: 1; -webkit-flex: 1; flex: 1;
+  text-align: center; padding: 9px 0;
+  font-size: 13.5px; color: #6b6785; font-weight: 600;
+  border-radius: 9px; cursor: pointer;
+}
+.tab.on { background: #6C5CE7; color: #fff; }
+
+/* 帖子卡片 */
+.card {
+  background: #fff; border-radius: 14px;
+  padding: 14px; margin-bottom: 11px;
+  border: 1px solid #eae7f7;
+}
+.card-head {
+  display: -webkit-box; display: -webkit-flex; display: flex;
+  -webkit-box-align: center; -webkit-align-items: center; align-items: center;
+  margin-bottom: 9px;
+}
+.avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: #6C5CE7; color: #fff;
+  font-size: 14px; font-weight: 700;
+  text-align: center; line-height: 34px;
+  margin-right: 9px; overflow: hidden;
+  -webkit-box-flex: 0; -webkit-flex: 0 0 auto; flex: 0 0 auto;
+}
+.avatar img { width: 34px; height: 34px; display: block; }
+.who-col { -webkit-box-flex: 1; -webkit-flex: 1; flex: 1; min-width: 0; }
+.who-name { font-size: 14px; font-weight: 600; }
+.who-time { font-size: 11.5px; color: #8b87a3; }
+.badge {
+  font-size: 11px; padding: 2px 8px; border-radius: 9px;
+  background: #fff4e5; color: #e67e22; font-weight: 600;
+}
+.badge.ok { background: #e8f8f2; color: #00a884; }
+.badge.no { background: #fdecea; color: #e74c3c; }
+
+.card-title { font-size: 15px; font-weight: 600; margin: 0 0 6px; }
+.card-body {
+  font-size: 14px; color: #3d3a55; margin: 0 0 9px;
+  white-space: pre-wrap; word-wrap: break-word; word-break: break-word;
+}
+.card-imgs { margin-bottom: 10px; }
+.card-imgs img {
+  width: 100%; max-width: 240px; border-radius: 9px;
+  display: block; margin-bottom: 6px; background: #f3f1fb;
+}
+
+/* 操作按钮 */
+.acts {
+  display: -webkit-box; display: -webkit-flex; display: flex;
+  border-top: 1px solid #f0edfa; padding-top: 11px;
+}
+.act {
+  -webkit-box-flex: 1; -webkit-flex: 1; flex: 1;
+  height: 40px; border: none; border-radius: 10px;
+  font-size: 14px; font-weight: 600;
+  cursor: pointer; outline: none;
+  -webkit-appearance: none;
+}
+.act:first-child { margin-right: 9px; }
+.act-ok { background: #00b894; color: #fff; }
+.act-no { background: #f3f1fb; color: #e74c3c; border: 1px solid #f5c6cb; }
+.act:active { opacity: 0.82; }
+.act[disabled] { opacity: 0.5; }
+
+/* 空状态 */
+.empty { text-align: center; padding: 50px 20px; color: #8b87a3; font-size: 14px; }
+.empty .ico { font-size: 40px; display: block; margin-bottom: 10px; }
+
+/* 加载 */
+.loading { text-align: center; padding: 34px; color: #8b87a3; font-size: 14px; }
+.spinner {
+  width: 26px; height: 26px; margin: 0 auto 10px;
+  border: 3px solid #e2def5; border-top-color: #6C5CE7;
+  border-radius: 50%;
+  -webkit-animation: spin 0.8s linear infinite;
+  animation: spin 0.8s linear infinite;
+}
+@-webkit-keyframes spin { to { -webkit-transform: rotate(360deg); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* 提示 */
+#toast {
+  position: fixed; left: 50%; bottom: 84px;
+  -webkit-transform: translateX(-50%);
+  transform: translateX(-50%);
+  background: rgba(26, 23, 48, 0.92); color: #fff;
+  padding: 11px 20px; border-radius: 22px;
+  font-size: 13.5px; z-index: 999;
+  opacity: 0; visibility: hidden;
+  -webkit-transition: opacity 0.22s;
+  transition: opacity 0.22s;
+  max-width: 82%; text-align: center;
+}
+#toast.show { opacity: 1; visibility: visible; }
+
+/* 底部刷新栏 */
+.bottom-bar {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  background: #fff; border-top: 1px solid #eae7f7;
+  padding: 9px 12px; z-index: 100;
+  display: -webkit-box; display: -webkit-flex; display: flex;
+}
+.bottom-bar button {
+  -webkit-box-flex: 1; -webkit-flex: 1; flex: 1;
+  height: 42px; background: #6C5CE7; border: none;
+  border-radius: 11px; color: #fff;
+  font-size: 14.5px; font-weight: 600;
+  cursor: pointer; outline: none;
+  -webkit-appearance: none;
+}
+.bottom-bar button:active { opacity: 0.85; }
+
+/* ═══ LITE_V2_FIX1: 四大类切换 ═══ */
+.cat-tabs {
+  display: -webkit-box; display: -webkit-flex; display: flex;
+  background: #fff; border-radius: 12px; padding: 4px;
+  margin-bottom: 10px; border: 1px solid #eae7f7;
+}
+.cat-tab {
+  -webkit-box-flex: 1; -webkit-flex: 1; flex: 1;
+  text-align: center; padding: 10px 0;
+  font-size: 13.5px; color: #6b6785; font-weight: 600;
+  border-radius: 9px; cursor: pointer;
+  position: relative;
+}
+.cat-tab.on { background: #6C5CE7; color: #fff; }
+.cat-num {
+  display: inline-block; min-width: 17px; height: 17px; line-height: 17px;
+  padding: 0 5px; margin-left: 4px;
+  background: #e74c3c; color: #fff; border-radius: 9px;
+  font-size: 10.5px; font-weight: 700; vertical-align: 1px;
+}
+.cat-tab.on .cat-num { background: #fff; color: #6C5CE7; }
+
+/* 应用/资源卡片图标 */
+.app-icon {
+  width: 40px; height: 40px; border-radius: 11px;
+  background: #f3f1fb; margin-right: 10px; overflow: hidden;
+  -webkit-box-flex: 0; -webkit-flex: 0 0 auto; flex: 0 0 auto;
+  text-align: center; line-height: 40px; font-size: 19px;
+}
+.app-icon img { width: 40px; height: 40px; display: block; }
+
+.meta-row { font-size: 12px; color: #8b87a3; margin: 3px 0; }
+.meta-row b { color: #6b6785; font-weight: 600; }
+
+/* 举报卡片 */
+.report-target {
+  background: #faf9fe; border: 1px solid #eeebfa; border-radius: 9px;
+  padding: 9px 11px; margin: 8px 0;
+}
+.report-target .rt-label { font-size: 11.5px; color: #8b87a3; font-weight: 600; }
+.report-target .rt-body { font-size: 13px; color: #3d3a55; margin-top: 3px; word-break: break-word; }
+.reason-tag {
+  display: inline-block; padding: 2px 9px; border-radius: 8px;
+  background: #fdecea; color: #e74c3c; font-size: 11.5px; font-weight: 600;
+  margin-right: 6px;
+}
+</style>
+</head>
+<body>
+
+<!-- ══════ 登录 ══════ -->
+<div id="loginWrap">
+  <div class="login-box">
+    <div class="login-logo">德</div>
+    <h1 class="login-title">审核台</h1>
+    <p class="login-sub">小德社区 · 内容审核</p>
+    <div class="field">
+      <label>账号</label>
+      <input type="text" id="lUser" placeholder="请输入账号" autocomplete="off" autocorrect="off" autocapitalize="off">
+    </div>
+    <div class="field">
+      <label>密码</label>
+      <input type="password" id="lPwd" placeholder="请输入密码">
+    </div>
+    <button class="btn-main" id="lBtn" onclick="doLogin()">登 录</button>
+    <div class="login-err" id="lErr"></div>
+  </div>
+</div>
+
+<!-- ══════ 主界面 ══════ -->
+<div id="app">
+  <div class="topbar">
+    <span class="ttl">审核台</span>
+    <span class="who" id="who"></span>
+    <button class="btn-out" onclick="doLogout()">退出</button>
+  </div>
+
+  <div class="content">
+    <div class="stats" id="statsRow">
+      <div class="stat red"><div class="n" id="sPending">-</div><div class="l">待审核</div></div>
+      <div class="stat"><div class="n" id="sApproved">-</div><div class="l">已通过</div></div>
+      <div class="stat"><div class="n" id="sRejected">-</div><div class="l">已驳回</div></div>
+    </div>
+
+    <div class="cat-tabs">
+      <div class="cat-tab on" id="catMoment" onclick="switchCat('moment')">帖子<span class="cat-num" id="numMoment">0</span></div>
+      <div class="cat-tab" id="catApp" onclick="switchCat('app')">应用<span class="cat-num" id="numApp">0</span></div>
+      <div class="cat-tab" id="catRes" onclick="switchCat('res')">资源<span class="cat-num" id="numRes">0</span></div>
+      <div class="cat-tab" id="catReport" onclick="switchCat('report')">举报<span class="cat-num" id="numReport">0</span></div>
+    </div>
+
+    <div class="tabs" id="statusTabs">
+      <div class="tab on" id="tabPending" onclick="switchTab('pending')">待审核</div>
+      <div class="tab" id="tabApproved" onclick="switchTab('approved')">已通过</div>
+      <div class="tab" id="tabRejected" onclick="switchTab('rejected')">已驳回</div>
+    </div>
+
+    <div id="list"><div class="loading"><div class="spinner"></div>加载中...</div></div>
+  </div>
+
+  <div class="bottom-bar">
+    <button onclick="loadList(currentTab);loadCounts();loadStats()">刷新列表</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ════════════════════════════════════════════════════════
+   精简版审核台 —— 兼容 Android 4.4 (Chrome 30)
+   不使用 async/await / 箭头函数 / let / const / 模板字符串
+   ════════════════════════════════════════════════════════ */
+
+var API = '';           /* 同源部署，留空即可 */
+var TK = '';            /* access token */
+var ME = null;          /* 当前用户 */
+var currentTab = 'pending';
+var cachedList = {};
+
+/* ---------- 工具 ---------- */
+function $(id) { return document.getElementById(id); }
+
+function toast(msg) {
+  var t = $('toast');
+  t.innerHTML = msg;
+  t.className = 'show';
+  clearTimeout(t._tm);
+  t._tm = setTimeout(function () { t.className = ''; }, 2200);
+}
+
+function esc(s) {
+  if (s === null || s === undefined) return '';
+  s = String(s);
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+          .replace(/"/g, '"').replace(/'/g, '&#39;');
+}
+
+/* 时间格式化 */
+function fmtTime(iso) {
+  if (!iso) return '';
+  var d = new Date(iso);
+  if (isNaN(d.getTime())) return String(iso).substring(0, 16).replace('T', ' ');
+  function p(n) { return n < 10 ? '0' + n : '' + n; }
+  return (d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+}
+
+/* 本地存储（4.4 支持 localStorage） */
+function save(key, val) {
+  try { window.localStorage.setItem(key, val); } catch (e) {}
+}
+function load(key) {
+  try { return window.localStorage.getItem(key); } catch (e) { return null; }
+}
+function del(key) {
+  try { window.localStorage.removeItem(key); } catch (e) {}
+}
+
+/* ---------- 网络（XMLHttpRequest，不用 fetch） ---------- */
+function request(method, path, body, cb) {
+  var xhr = new XMLHttpRequest();
+  xhr.open(method, API + path, true);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  if (TK) xhr.setRequestHeader('Authorization', 'Bearer ' + TK);
+  xhr.timeout = 20000;
+
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState !== 4) return;
+    var data = null;
+    try { data = JSON.parse(xhr.responseText); } catch (e) { data = xhr.responseText; }
+    if (xhr.status >= 200 && xhr.status < 300) {
+      cb(null, data);
+    } else {
+      var msg = '';
+      if (data && data.detail) {
+        msg = typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail);
+      } else {
+        msg = 'HTTP ' + xhr.status;
+      }
+      cb(msg, null);
+    }
+  };
+  xhr.ontimeout = function () { cb('网络超时，请重试', null); };
+  xhr.onerror = function () { cb('网络连接失败', null); };
+
+  if (body) {
+    xhr.send(JSON.stringify(body));
+  } else {
+    xhr.send();
+  }
+}
+
+function get(path, cb) { request('GET', path, null, cb); }
+function post(path, body, cb) { request('POST', path, body, cb); }
+
+/* ---------- 登录 ---------- */
+function showErr(msg) {
+  var e = $('lErr');
+  e.innerHTML = esc(msg);
+  e.style.display = 'block';
+}
+
+function doLogin() {
+  var u = $('lUser').value.replace(/^\s+|\s+$/g, '');
+  var p = $('lPwd').value;
+  if (!u || !p) { showErr('请输入账号和密码'); return; }
+
+  var btn = $('lBtn');
+  btn.disabled = true;
+  btn.innerHTML = '登录中...';
+  $('lErr').style.display = 'none';
+
+  post('/api/auth/login', { username: u, password: p }, function (err, data) {
+    if (err) {
+      btn.disabled = false;
+      btn.innerHTML = '登 录';
+      showErr(err);
+      return;
+    }
+    TK = data.access_token;
+    save('tk', TK);
+    checkAdmin(function (ok, msg) {
+      btn.disabled = false;
+      btn.innerHTML = '登 录';
+      if (!ok) {
+        showErr(msg || '该账号没有审核权限');
+        TK = '';
+        del('tk');
+        return;
+      }
+      enterApp();
+    });
+  });
+}
+
+function checkAdmin(cb) {
+  get('/api/auth/me', function (err, me) {
+    if (err) { cb(false, err); return; }
+    ME = me;
+    if (me.is_admin) { cb(true); return; }
+    cb(false, '该账号没有管理员权限');
+  });
+}
+
+function enterApp() {
+  $('loginWrap').style.display = 'none';
+  $('app').style.display = 'block';
+  $('who').innerHTML = esc(ME.nickname || ME.username || '');
+  loadStats();
+  loadCounts();          /* LITE_V2 */
+  loadList('pending');
+}
+
+function doLogout() {
+  TK = '';
+  ME = null;
+  del('tk');
+  cachedList = {};
+  $('loginWrap').style.display = '';
+  $('app').style.display = 'none';
+  $('lPwd').value = '';
+  $('lErr').style.display = 'none';
+}
+
+/* ---------- 统计 ---------- */
+function loadStats() {
+  get('/api/admin/stats', function (err, s) {
+    if (err || !s) return;
+    $('sPending').innerHTML = (s.moments_pending === undefined ? '-' : s.moments_pending);
+  });
+  /* 通过/驳回数另取 */
+  get('/api/admin/moments?status=approved&limit=200', function (err, arr) {
+    $('sApproved').innerHTML = (err || !arr) ? '-' : arr.length;
+  });
+  get('/api/admin/moments?status=rejected&limit=200', function (err, arr) {
+    $('sRejected').innerHTML = (err || !arr) ? '-' : arr.length;
+  });
+}
+
+/* ---------- 列表 ---------- */
+function switchTab(t) {
+  currentTab = t;
+  $('tabPending').className = 'tab' + (t === 'pending' ? ' on' : '');
+  $('tabApproved').className = 'tab' + (t === 'approved' ? ' on' : '');
+  $('tabRejected').className = 'tab' + (t === 'rejected' ? ' on' : '');
+  loadList(t);
+}
+
+function loadMoments(t) {
+  $('list').innerHTML = '<div class="loading"><div class="spinner"></div>加载中...</div>';
+  get('/api/admin/moments?status=' + t + '&limit=60', function (err, arr) {
+    if (err) {
+      $('list').innerHTML = '<div class="empty"><span class="ico">⚠️</span>' + esc(err) + '</div>';
+      return;
+    }
+    if (!arr || arr.length === 0) {
+      var txt = t === 'pending' ? '暂无待审核内容 ✨' : (t === 'approved' ? '还没有通过的帖子' : '还没有驳回的帖子');
+      $('list').innerHTML = '<div class="empty"><span class="ico">📭</span>' + txt + '</div>';
+      return;
+    }
+    cachedList = {};
+    var html = '';
+    for (var i = 0; i < arr.length; i++) {
+      var m = arr[i];
+      cachedList[m.id] = m;
+      html += renderCard(m, t);
+    }
+    $('list').innerHTML = html;
+  });
+}
+
+function renderCard(m, tab) {
+  var nick = m.nickname || m.username || ('用户' + (m.user_id || ''));
+  var first = nick.charAt(0);
+  var avatarUrl = m.avatar || '';
+  var avInner = avatarUrl ? '<img src="' + esc(avatarUrl) + '" alt="">' : esc(first);
+
+  var badge = '';
+  if (m.status === 'pending') badge = '<span class="badge">待审核</span>';
+  else if (m.status === 'approved') badge = '<span class="badge ok">已通过</span>';
+  else if (m.status === 'rejected') badge = '<span class="badge no">已驳回</span>';
+
+  var titleHtml = m.title ? '<div class="card-title">' + esc(m.title) + '</div>' : '';
+  var bodyHtml = m.content ? '<div class="card-body">' + esc(m.content) + '</div>' : '';
+
+  /* 图片 */
+  var imgsHtml = '';
+  var imgs = m.images || [];
+  if (imgs.length > 0) {
+    imgsHtml = '<div class="card-imgs">';
+    for (var k = 0; k < imgs.length && k < 4; k++) {
+      imgsHtml += '<img src="' + esc(imgs[k]) + '" alt="" onclick="viewImg(\'' + esc(imgs[k]) + '\')">';
+    }
+    imgsHtml += '</div>';
+  }
+
+  /* 操作 */
+  var acts = '';
+  if (tab === 'pending') {
+    acts = '<div class="acts">'
+         + '<button class="act act-ok" onclick="review(' + m.id + ',\'approved\',this)">✅ 通过</button>'
+         + '<button class="act act-no" onclick="review(' + m.id + ',\'rejected\',this)">❌ 驳回</button>'
+         + '</div>';
+  } else if (tab === 'approved') {
+    acts = '<div class="acts">'
+         + '<button class="act act-no" onclick="review(' + m.id + ',\'rejected\',this)">改判为驳回</button>'
+         + '</div>';
+  } else {
+    acts = '<div class="acts">'
+         + '<button class="act act-ok" onclick="review(' + m.id + ',\'approved\',this)">改判为通过</button>'
+         + '</div>';
+  }
+
+  return '<div class="card" id="card' + m.id + '">'
+       + '<div class="card-head">'
+       +   '<div class="avatar">' + avInner + '</div>'
+       +   '<div class="who-col">'
+       +     '<div class="who-name">' + esc(nick) + '</div>'
+       +     '<div class="who-time">' + fmtTime(m.created_at) + '</div>'
+       +   '</div>'
+       +   badge
+       + '</div>'
+       + titleHtml + bodyHtml + imgsHtml
+       + acts
+       + '</div>';
+}
+
+/* ---------- 审核 ---------- */
+function review(id, status, btn) {
+  if (!confirm(status === 'approved' ? '确认通过这条内容？' : '确认驳回这条内容？')) return;
+
+  if (btn) { btn.disabled = true; btn.innerHTML = '处理中...'; }
+
+  post('/api/admin/moments/' + id + '/review', { status: status }, function (err, data) {
+    if (err) {
+      if (btn) { btn.disabled = false; btn.innerHTML = status === 'approved' ? '✅ 通过' : '❌ 驳回'; }
+      toast('操作失败：' + err);
+      return;
+    }
+    toast(status === 'approved' ? '✅ 已通过' : '❌ 已驳回');
+    /* 从当前列表移除 */
+    var el = $('card' + id);
+    if (el && el.parentNode) el.parentNode.removeChild(el);
+    /* 若列表空了显示空状态 */
+    var list = $('list');
+    if (list && list.children.length === 0) {
+      list.innerHTML = '<div class="empty"><span class="ico">📭</span>暂无待审核内容 ✨</div>';
+    }
+    loadStats();
+    loadCounts();
+  });
+}
+
+/* ---------- 看图 ---------- */
+function viewImg(url) {
+  var w = window.open('');
+  if (w) {
+    w.document.write('<html><head><meta name="viewport" content="width=device-width,initial-scale=1"></head>'
+      + '<body style="margin:0;background:#000;text-align:center">'
+      + '<img src="' + esc(url) + '" style="max-width:100%">'
+      + '</body></html>');
+  }
+}
+
+
+/* ════════════════════════════════════════════════════
+   LITE_V2: 四大类审核（帖子 / 应用 / 资源 / 举报）
+   ════════════════════════════════════════════════════ */
+
+var currentCat = 'moment';   /* moment / app / res / report */
+var catCount = { moment: 0, app: 0, res: 0, report: 0 };
+
+function switchCat(c) {
+  currentCat = c;
+  $('catMoment').className = 'cat-tab' + (c === 'moment' ? ' on' : '');
+  $('catApp').className = 'cat-tab' + (c === 'app' ? ' on' : '');
+  $('catRes').className = 'cat-tab' + (c === 'res' ? ' on' : '');
+  $('catReport').className = 'cat-tab' + (c === 'report' ? ' on' : '');
+
+  /* 举报只有「待处理」，隐藏状态切换 */
+  if (c === 'report') {
+    $('statusTabs').style.display = 'none';
+    $('statsRow').style.display = 'none';
+    loadReports();
+  } else {
+    $('statusTabs').style.display = '';
+    $('statsRow').style.display = '';
+    currentTab = 'pending';
+    $('tabPending').className = 'tab on';
+    $('tabApproved').className = 'tab';
+    $('tabRejected').className = 'tab';
+    loadList('pending');
+  }
+}
+
+function setNum(id, n) {
+  var el = $(id);
+  if (el) el.innerHTML = (n > 99 ? '99+' : n);
+  if (el) el.style.display = (n > 0 ? 'inline-block' : 'none');
+}
+
+/* 加载各类待审数量 */
+function loadCounts() {
+  get('/api/admin/moments?status=pending&limit=200', function (err, a) {
+    catCount.moment = (err || !a) ? 0 : a.length;
+    setNum('numMoment', catCount.moment);
+  });
+  get('/api/admin/apps?st=pending&limit=300', function (err, a) {
+    catCount.app = (err || !a) ? 0 : a.length;
+    setNum('numApp', catCount.app);
+  });
+  get('/api/admin/resources?st=pending&limit=300', function (err, d) {
+    catCount.res = (err || !d || !d.items) ? 0 : d.items.length;
+    setNum('numRes', catCount.res);
+  });
+  get('/api/admin/reports?st=pending', function (err, a) {
+    catCount.report = (err || !a) ? 0 : a.length;
+    setNum('numReport', catCount.report);
+  });
+}
+
+/* ---------- 统一入口（原 loadList 已改名 loadMoments） ---------- */
+function loadList(t) {
+  if (currentCat === 'moment') { loadMoments(t); return; }
+  if (currentCat === 'app') { loadApps(t); return; }
+  if (currentCat === 'res') { loadResources(t); return; }
+  if (currentCat === 'report') { loadReports(); return; }
+}
+
+/* ---------- 应用 ---------- */
+function loadApps(t) {
+  $('list').innerHTML = '<div class="loading"><div class="spinner"></div>加载中...</div>';
+  get('/api/admin/apps?st=' + t + '&limit=80', function (err, arr) {
+    if (err) { $('list').innerHTML = '<div class="empty"><span class="ico">⚠️</span>' + esc(err) + '</div>'; return; }
+    if (!arr || arr.length === 0) {
+      $('list').innerHTML = '<div class="empty"><span class="ico">📭</span>' + emptyText(t, '应用') + '</div>';
+      return;
+    }
+    var html = '';
+    for (var i = 0; i < arr.length; i++) html += renderApp(arr[i], t);
+    $('list').innerHTML = html;
+  });
+}
+
+function renderApp(a, tab) {
+  var iconInner = a.icon ? '<img src="' + esc(a.icon) + '" alt="">' : '📱';
+  var badge = badgeHtml(a.status);
+  var shots = '';
+  if (a.screenshots && a.screenshots.length > 0) {
+    shots = '<div class="card-imgs">';
+    for (var k = 0; k < a.screenshots.length && k < 3; k++) {
+      shots += '<img src="' + esc(a.screenshots[k]) + '" alt="">';
+    }
+    shots += '</div>';
+  }
+  var meta = '<div class="meta-row">包名：<b>' + esc(a.package_name || '-') + '</b></div>';
+  meta += '<div class="meta-row">版本：<b>' + esc(a.version || '-') + '</b>　分类：<b>' + esc(a.category || '-') + '</b></div>';
+  meta += '<div class="meta-row">上传者：<b>' + esc(a.uploader_name || '-') + '</b>　' + fmtTime(a.created_at) + '</div>';
+
+  return '<div class="card" id="card' + a.id + '">'
+    + '<div class="card-head">'
+    +   '<div class="app-icon">' + iconInner + '</div>'
+    +   '<div class="who-col"><div class="who-name">' + esc(a.name || '未命名应用') + '</div>'
+    +   '<div class="who-time">' + esc(a.summary || '') + '</div></div>'
+    +   badge
+    + '</div>'
+    + meta
+    + (a.description ? '<div class="card-body">' + esc(a.description).substring(0, 300) + '</div>' : '')
+    + shots
+    + actsHtml(a.id, tab, 'app')
+    + '</div>';
+}
+
+/* ---------- 资源 ---------- */
+function loadResources(t) {
+  $('list').innerHTML = '<div class="loading"><div class="spinner"></div>加载中...</div>';
+  get('/api/admin/resources?st=' + t + '&limit=100', function (err, d) {
+    if (err) { $('list').innerHTML = '<div class="empty"><span class="ico">⚠️</span>' + esc(err) + '</div>'; return; }
+    var arr = (d && d.items) ? d.items : [];
+    if (arr.length === 0) {
+      $('list').innerHTML = '<div class="empty"><span class="ico">📭</span>' + emptyText(t, '资源') + '</div>';
+      return;
+    }
+    var html = '';
+    for (var i = 0; i < arr.length; i++) html += renderRes(arr[i], t);
+    $('list').innerHTML = html;
+  });
+}
+
+function renderRes(r, tab) {
+  var cover = r.cover || r.avatar || '';
+  var iconInner = cover ? '<img src="' + esc(cover) + '" alt="">' : '📦';
+  var badge = badgeHtml(r.status);
+  var meta = '<div class="meta-row">分类：<b>' + esc(r.category || '-') + '</b>　类型：<b>' + esc(r.res_type || 'link') + '</b></div>';
+  meta += '<div class="meta-row">上传者：<b>' + esc(r.uploader_name || '-') + '</b>　' + fmtTime(r.created_at) + '</div>';
+  if (r.is_paid) meta += '<div class="meta-row">付费资源：<b>' + r.price + ' 金币</b></div>';
+
+  return '<div class="card" id="card' + r.id + '">'
+    + '<div class="card-head">'
+    +   '<div class="app-icon">' + iconInner + '</div>'
+    +   '<div class="who-col"><div class="who-name">' + esc(r.name || '未命名资源') + '</div>'
+    +   '<div class="who-time">' + esc(r.summary || '') + '</div></div>'
+    +   badge
+    + '</div>'
+    + meta
+    + (r.description ? '<div class="card-body">' + esc(r.description).substring(0, 300) + '</div>' : '')
+    + actsHtml(r.id, tab, 'res')
+    + '</div>';
+}
+
+/* ---------- 举报 ---------- */
+function loadReports() {
+  $('list').innerHTML = '<div class="loading"><div class="spinner"></div>加载中...</div>';
+  get('/api/admin/reports?st=pending', function (err, arr) {
+    if (err) { $('list').innerHTML = '<div class="empty"><span class="ico">⚠️</span>' + esc(err) + '</div>'; return; }
+    if (!arr || arr.length === 0) {
+      $('list').innerHTML = '<div class="empty"><span class="ico">✅</span>暂无待处理举报</div>';
+      return;
+    }
+    var html = '';
+    for (var i = 0; i < arr.length; i++) html += renderReport(arr[i]);
+    $('list').innerHTML = html;
+  });
+}
+
+function renderReport(r) {
+  var typeName = { moment: '帖子', comment: '评论', user: '用户', app: '应用', resource: '资源' };
+  var tn = typeName[r.target_type] || r.target_type;
+  return '<div class="card" id="card' + r.id + '">'
+    + '<div class="card-head">'
+    +   '<div class="app-icon">🚩</div>'
+    +   '<div class="who-col">'
+    +     '<div class="who-name">' + esc(tn) + ' #' + r.target_id + '</div>'
+    +     '<div class="who-time">' + fmtTime(r.created_at) + '　举报人 ID ' + r.reporter_id + '</div>'
+    +   '</div>'
+    +   '<span class="badge">待处理</span>'
+    + '</div>'
+    + '<div class="report-target">'
+    +   '<div class="rt-label">举报理由</div>'
+    +   '<div class="rt-body"><span class="reason-tag">' + esc(r.reason || '未填写') + '</span></div>'
+    +   (r.detail ? '<div class="rt-body">' + esc(r.detail) + '</div>' : '')
+    + '</div>'
+    + '<div class="acts">'
+    +   '<button class="act act-ok" onclick="handleReport(' + r.id + ',\'clean\',this)">✅ 无违规</button>'
+    +   '<button class="act act-no" onclick="handleReport(' + r.id + ',\'violation\',this)">🚫 违规删除</button>'
+    + '</div>'
+    + '</div>';
+}
+
+function handleReport(id, verdict, btn) {
+  var msg = verdict === 'violation' ? '确认违规？将删除被举报的内容' : '确认无违规？将保留内容';
+  if (!confirm(msg)) return;
+  if (btn) { btn.disabled = true; btn.innerHTML = '处理中...'; }
+  post('/api/admin/reports/' + id + '/handle?verdict=' + verdict, {}, function (err, d) {
+    if (err) {
+      if (btn) { btn.disabled = false; btn.innerHTML = verdict === 'violation' ? '🚫 违规删除' : '✅ 无违规'; }
+      toast('处理失败：' + err);
+      return;
+    }
+    toast(verdict === 'violation' ? '🚫 已删除内容' : '✅ 已标记无违规');
+    var el = $('card' + id);
+    if (el && el.parentNode) el.parentNode.removeChild(el);
+    var list = $('list');
+    if (list && list.children.length === 0) {
+      list.innerHTML = '<div class="empty"><span class="ico">✅</span>暂无待处理举报</div>';
+    }
+    loadCounts();
+  });
+}
+
+/* ---------- 公共 ---------- */
+function badgeHtml(status) {
+  if (status === 'pending') return '<span class="badge">待审核</span>';
+  if (status === 'approved') return '<span class="badge ok">已通过</span>';
+  if (status === 'rejected') return '<span class="badge no">已驳回</span>';
+  return '';
+}
+
+function emptyText(t, what) {
+  if (t === 'pending') return '暂无待审核' + what + ' ✨';
+  if (t === 'approved') return '还没有通过的' + what;
+  return '还没有驳回的' + what;
+}
+
+function actsHtml(id, tab, kind) {
+  if (tab === 'pending') {
+    return '<div class="acts">'
+      + '<button class="act act-ok" onclick="reviewItem(\'' + kind + '\',' + id + ',\'approved\',this)">✅ 通过</button>'
+      + '<button class="act act-no" onclick="reviewItem(\'' + kind + '\',' + id + ',\'rejected\',this)">❌ 驳回</button>'
+      + '</div>';
+  }
+  if (tab === 'approved') {
+    return '<div class="acts"><button class="act act-no" onclick="reviewItem(\'' + kind + '\',' + id + ',\'rejected\',this)">改判为驳回</button></div>';
+  }
+  return '<div class="acts"><button class="act act-ok" onclick="reviewItem(\'' + kind + '\',' + id + ',\'approved\',this)">改判为通过</button></div>';
+}
+
+function reviewItem(kind, id, status, btn) {
+  if (kind === 'moment') { review(id, status, btn); return; }
+
+  var label = status === 'approved' ? '通过' : '驳回';
+  if (!confirm('确认' + label + '？')) return;
+  if (btn) { btn.disabled = true; btn.innerHTML = '处理中...'; }
+
+  var url, body;
+  if (kind === 'app') {
+    url = '/api/admin/apps/' + id + '/review';
+    body = { action: status };
+  } else {
+    url = '/api/admin/resources/' + id + '/review';
+    body = { action: status };
+  }
+
+  post(url, body, function (err, d) {
+    if (err) {
+      if (btn) { btn.disabled = false; btn.innerHTML = label; }
+      toast('操作失败：' + err);
+      return;
+    }
+    toast(status === 'approved' ? '✅ 已通过' : '❌ 已驳回');
+    var el = $('card' + id);
+    if (el && el.parentNode) el.parentNode.removeChild(el);
+    var list = $('list');
+    if (list && list.children.length === 0) {
+      list.innerHTML = '<div class="empty"><span class="ico">📭</span>暂无内容</div>';
+    }
+    loadCounts();
+    loadStats();
+  });
+}
+
+/* ---------- 启动 ---------- */
+(function () {
+  /* 回车登录 */
+  $('lPwd').addEventListener('keydown', function (e) {
+    var k = e.keyCode || e.which;
+    if (k === 13) doLogin();
+  }, false);
+
+  /* 自动登录 */
+  var t = load('tk');
+  if (t) {
+    TK = t;
+    checkAdmin(function (ok) {
+      if (ok) {
+        enterApp();
+      } else {
+        TK = '';
+        del('tk');
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

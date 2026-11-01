@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>小德社区 · 帖子广场</title>
+<meta name="description" content="小德社区网页版，浏览社区帖子。完整功能请下载 App。">
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+:root{--pri:#3CC9A4;--pri-d:#2fb391;--bg:#f7f8fa;--card:#fff;--tx:#22262e;--bd:#eef0f4}
+body{background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue","Microsoft YaHei",sans-serif;font-size:15px;line-height:1.75;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.top{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--bd)}
+.top-in{max-width:760px;margin:0 auto;height:52px;padding:0 16px;display:flex;align-items:center;gap:10px}
+.logo{width:28px;height:28px;border-radius:9px;flex:none;background:linear-gradient(135deg,#3CC9A4,#57d9b6);display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:800}
+.top-t{font-size:16.5px;font-weight:800;letter-spacing:.3px}
+.top-badge{margin-left:auto;font-size:11.5px;color:var(--pri);background:rgba(60,201,164,.1);padding:3px 9px;border-radius:999px;font-weight:600}
+.dl-banner{max-width:760px;margin:12px auto 0;padding:0 16px}
+.dl-in{background:linear-gradient(120deg,#3CC9A4,#4bd6ae 60%,#6fe0c0);border-radius:14px;padding:13px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 6px 20px rgba(60,201,164,.22)}
+.dl-txt{flex:1;min-width:0}
+.dl-t1{font-size:14.5px;font-weight:800;color:#fff;line-height:1.4}
+.dl-t2{font-size:11.5px;color:rgba(255,255,255,.88);margin-top:2px}
+.dl-btn{flex:none;background:#fff;color:var(--pri-d);border:0;padding:8px 16px;border-radius:999px;font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap}
+.wrap{max-width:760px;margin:0 auto;padding:12px 16px 40px}
+.post{background:var(--card);border-radius:12px;padding:15px 16px;margin-bottom:10px;cursor:pointer;transition:transform .16s ease,box-shadow .16s ease;border:1px solid rgba(238,240,244,.9)}
+.post:active{transform:scale(.988);box-shadow:0 2px 12px rgba(30,40,70,.07)}
+.post-head{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.avatar{width:26px;height:26px;border-radius:50%;flex:none;background:linear-gradient(135deg,#dfe5ec,#c9d2dd);display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;color:#7a8494}
+.nick{font-size:13px;font-weight:600;color:#3a4150;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lvl{font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:999px;background:rgba(60,201,164,.11);color:var(--pri-d);flex:none}
+.time{font-size:11.5px;color:#b3bac6;margin-left:auto;flex:none}
+.post-title{font-size:16px;font-weight:800;color:#1a1e26;line-height:1.5;margin-bottom:6px;word-break:break-word}
+.post-body{font-size:14px;color:#666d7b;line-height:1.72;word-break:break-word;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.post-foot{margin-top:11px;display:flex;align-items:center;gap:16px;font-size:12.5px;color:#a3aab7}
+.pf{display:flex;align-items:center;gap:4px}
+.pf .ic{font-size:12px;opacity:.75}
+.media-tip{margin-top:9px;font-size:11.5px;color:#b3bac6;background:#f7f8fa;border-radius:7px;padding:5px 9px;display:inline-block}
+.detail{background:#fff;border-radius:12px;padding:18px 16px}
+.d-title{font-size:19px;font-weight:800;line-height:1.5;color:#1a1e26;margin-bottom:12px;word-break:break-word}
+.d-meta{display:flex;align-items:center;gap:8px;padding-bottom:13px;border-bottom:1px solid var(--bd);margin-bottom:14px}
+.d-content{font-size:15px;color:#4a505c;line-height:1.85;word-break:break-word;white-space:pre-wrap}
+.d-stats{margin-top:16px;padding-top:13px;border-top:1px solid var(--bd);display:flex;gap:18px;font-size:12.5px;color:#a3aab7}
+.cmt-sec{background:#fff;border-radius:12px;padding:15px 16px;margin-top:10px}
+.cmt-h{font-size:14px;font-weight:800;color:#22262e;margin-bottom:11px}
+.cmt{padding:9px 0;border-bottom:1px solid #f5f6f9;font-size:13.5px}
+.cmt:last-child{border-bottom:0}
+.cmt-n{color:var(--pri-d);font-weight:700;font-size:12.5px;margin-bottom:2px}
+.cmt-c{color:#5a6170;line-height:1.7;word-break:break-word}
+.empty{text-align:center;padding:60px 20px;color:#b3bac6;font-size:13.5px}
+.empty .ic{font-size:36px;margin-bottom:10px;opacity:.5}
+.loading{text-align:center;padding:40px;color:#b3bac6;font-size:13.5px}
+.spinner{width:24px;height:24px;border:2.5px solid #eef0f4;border-top-color:var(--pri);border-radius:50%;margin:0 auto 11px;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.load-more{text-align:center;padding:18px;color:var(--pri-d);font-size:13.5px;font-weight:600;cursor:pointer}
+.load-end{text-align:center;padding:22px;color:#c3c9d3;font-size:12.5px}
+.back-bar{max-width:760px;margin:12px auto 0;padding:0 16px}
+.back-btn{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;color:#5a6170;cursor:pointer;background:#fff;padding:7px 14px;border-radius:999px;border:1px solid var(--bd)}
+.foot-guide{max-width:760px;margin:20px auto 0;padding:0 16px}
+.fg-in{background:#fff;border-radius:12px;padding:22px 18px;text-align:center;border:1px dashed #dde2ea}
+.fg-ic{font-size:30px;margin-bottom:9px;opacity:.6}
+.fg-t{font-size:14.5px;font-weight:700;color:#3a4150;margin-bottom:5px}
+.fg-s{font-size:12.5px;color:#a3aab7;line-height:1.7;margin-bottom:14px}
+.fg-btn{display:inline-block;background:linear-gradient(135deg,#3CC9A4,#4bd6ae);color:#fff;padding:11px 30px;border-radius:999px;font-size:14px;font-weight:800;cursor:pointer;border:0;box-shadow:0 5px 16px rgba(60,201,164,.28)}
+.fg-feat{margin-top:16px;display:flex;justify-content:center;gap:20px;flex-wrap:wrap;font-size:12px;color:#a3aab7}
+.fg-feat span{display:flex;align-items:center;gap:4px}
+.mask{position:fixed;inset:0;background:rgba(18,24,38,.5);z-index:200;display:none;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(3px)}
+.mask.on{display:flex}
+.modal{background:#fff;border-radius:18px;padding:26px 22px 22px;max-width:320px;width:100%;text-align:center;animation:pop .22s cubic-bezier(.34,1.4,.64,1)}
+@keyframes pop{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
+.m-ic{font-size:38px;margin-bottom:12px}
+.m-t{font-size:16.5px;font-weight:800;color:#1a1e26;margin-bottom:7px}
+.m-s{font-size:13px;color:#8a93a2;line-height:1.7;margin-bottom:20px}
+.m-btn{width:100%;background:linear-gradient(135deg,#3CC9A4,#4bd6ae);color:#fff;border:0;padding:12px;border-radius:999px;font-size:14.5px;font-weight:800;cursor:pointer;margin-bottom:9px}
+.m-cancel{width:100%;background:#f5f6f9;color:#7a8494;border:0;padding:11px;border-radius:999px;font-size:14px;cursor:pointer;font-weight:600}
+@media(max-width:420px){body{font-size:14.5px}.wrap{padding:10px 12px 34px}.dl-banner{padding:0 12px;margin-top:10px}.back-bar{padding:0 12px}.foot-guide{padding:0 12px}.post{padding:13px 14px;border-radius:11px}.post-title{font-size:15.5px}.d-title{font-size:17.5px}}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="top-in">
+    <div class="logo">德</div>
+    <div class="top-t">小德社区</div>
+    <div class="top-badge">网页版 · 仅浏览</div>
+  </div>
+</div>
+
+<div class="dl-banner">
+  <div class="dl-in">
+    <div class="dl-txt">
+      <div class="dl-t1">下载 App 体验完整功能</div>
+      <div class="dl-t2">发帖 · 评论 · 点赞 · 私信 · 频道</div>
+    </div>
+    <button class="dl-btn" onclick="showDl()">立即下载</button>
+  </div>
+</div>
+
+<div id="app">
+  <div class="wrap">
+    <div class="loading"><div class="spinner"></div>加载中...</div>
+  </div>
+</div>
+
+<div class="mask" id="mask" onclick="if(event.target===this)closeM()">
+  <div class="modal">
+    <div class="m-ic">📱</div>
+    <div class="m-t">需要下载 App</div>
+    <div class="m-s" id="mMsg">该功能在网页版不可用，请下载小德社区 App 使用。</div>
+    <button class="m-btn" onclick="goDl()">下载 App</button>
+    <button class="m-cancel" onclick="closeM()">稍后再说</button>
+  </div>
+</div>
+
+<script>
+var API = "";
+var DL_URL = "https://delai.fun";
+var state = { page: 0, size: 20, hasMore: true, loading: false, list: [] };
+
+function showDl(msg){
+  if(msg) document.getElementById("mMsg").textContent = msg;
+  document.getElementById("mask").classList.add("on");
+}
+function closeM(){ document.getElementById("mask").classList.remove("on"); }
+function goDl(){ location.href = DL_URL; }
+
+function esc(s){
+  if(s === null || s === undefined) return "";
+  var t = String(s);
+  t = t.split(String.fromCharCode(38)).join(String.fromCharCode(38) + "amp;");
+  t = t.split(String.fromCharCode(60)).join(String.fromCharCode(38) + "lt;");
+  t = t.split(String.fromCharCode(62)).join(String.fromCharCode(38) + "gt;");
+  t = t.split(String.fromCharCode(34)).join(String.fromCharCode(38) + "quot;");
+  t = t.split(String.fromCharCode(39)).join(String.fromCharCode(38) + "#39;");
+  return t;
+}
+
+function fmtTime(iso){
+  if(!iso) return "";
+  var d = new Date(iso);
+  if(isNaN(d.getTime())) return "";
+  var now = new Date();
+  var diff = (now - d) / 1000;
+  if(diff < 60) return "刚刚";
+  if(diff < 3600) return Math.floor(diff/60) + "分钟前";
+  if(diff < 86400) return Math.floor(diff/3600) + "小时前";
+  if(diff < 86400*7) return Math.floor(diff/86400) + "天前";
+  var m = d.getMonth()+1, dd = d.getDate();
+  return (d.getFullYear()!==now.getFullYear() ? d.getFullYear()+"-" : "") + m + "-" + dd;
+}
+
+function firstChar(s){
+  s = String(s||"").trim();
+  return s ? s.charAt(0).toUpperCase() : "?";
+}
+
+function mediaHint(imgs, vids, suffix){
+  if(!imgs && !vids) return "";
+  var parts = [];
+  if(imgs) parts.push(imgs + " 张图片");
+  if(vids) parts.push(vids + " 个视频");
+  return '<div class="media-tip">🖼 含 ' + parts.join(" · ") + '，' + (suffix||"网页版不加载，App 内查看") + '</div>';
+}
+
+async function loadList(reset){
+  if(state.loading) return;
+  if(reset){ state.page = 0; state.hasMore = true; state.list = []; }
+  if(!state.hasMore) return;
+
+  state.loading = true;
+  var box = document.getElementById("app");
+  if(reset){
+    box.innerHTML = '<div class="wrap"><div class="loading"><div class="spinner"></div>加载中...</div></div>';
+  }
+
+  try{
+    var offset = state.page * state.size;
+    var r = await fetch(API + "/api/moments?limit=" + state.size + "&offset=" + offset);
+    if(!r.ok) throw new Error("HTTP " + r.status);
+    var arr = await r.json();
+    if(!Array.isArray(arr)) arr = [];
+
+    state.list = state.list.concat(arr);
+    state.hasMore = arr.length >= state.size;
+    state.page++;
+
+    renderList();
+  }catch(e){
+    if(reset){
+      box.innerHTML = '<div class="wrap"><div class="empty"><div class="ic">😵</div>加载失败，请检查网络<br><span style="font-size:12px;color:#c3c9d3">' + esc(e.message) + '</span></div></div>';
+    }
+  }finally{
+    state.loading = false;
+  }
+}
+
+function renderList(){
+  var box = document.getElementById("app");
+  var h = '<div class="wrap">';
+
+  if(!state.list.length){
+    h += '<div class="empty"><div class="ic">📭</div>还没有帖子</div></div>';
+    box.innerHTML = h;
+    return;
+  }
+
+  for(var i=0;i<state.list.length;i++){
+    var p = state.list[i];
+    var imgs = (p.images||[]).length;
+    var vids = (p.videos||[]).length;
+
+    h += '<div class="post" onclick="openPost(' + p.id + ')">';
+    h += '<div class="post-head">';
+    h += '<div class="avatar">' + esc(firstChar(p.nickname || p.username)) + '</div>';
+    h += '<div class="nick">' + esc(p.nickname || p.username || "用户") + '</div>';
+    if(p.level) h += '<div class="lvl">Lv' + p.level + '</div>';
+    h += '<div class="time">' + fmtTime(p.created_at) + '</div>';
+    h += '</div>';
+
+    if(p.title) h += '<div class="post-title">' + esc(p.title) + '</div>';
+    h += '<div class="post-body">' + esc(p.content || "") + '</div>';
+    h += mediaHint(imgs, vids);
+
+    h += '<div class="post-foot">';
+    h += '<div class="pf"><span class="ic">💬</span>' + (p.comment_count||0) + '</div>';
+    h += '<div class="pf"><span class="ic">👍</span>' + (p.like_count||0) + '</div>';
+    h += '</div>';
+    h += '</div>';
+  }
+
+  if(state.hasMore){
+    h += '<div class="load-more" onclick="loadList(false)">加载更多</div>';
+  }else{
+    h += '<div class="load-end">— 已经到底了 —</div>';
+  }
+
+  h += '</div>';
+  h += '<div class="foot-guide"><div class="fg-in">';
+  h += '<div class="fg-ic">💬</div>';
+  h += '<div class="fg-t">想参与讨论？</div>';
+  h += '<div class="fg-s">网页版仅支持浏览帖子<br>发帖、评论、点赞、私信请在 App 内进行</div>';
+  h += '<button class="fg-btn" onclick="showDl()">下载小德社区 App</button>';
+  h += '<div class="fg-feat"><span>📝 发帖互动</span><span>📁 资源中心</span><span>💬 频道私信</span></div>';
+  h += '</div></div>';
+
+  box.innerHTML = h;
+  window.scrollTo(0, 0);
+}
+
+async function openPost(id){
+  var box = document.getElementById("app");
+  box.innerHTML = '<div class="back-bar"><div class="back-btn" onclick="loadList(true)">‹ 返回</div></div><div class="wrap"><div class="loading"><div class="spinner"></div>加载中...</div></div>';
+  window.scrollTo(0, 0);
+
+  try{
+    var r = await fetch(API + "/api/moments/" + id);
+    if(!r.ok) throw new Error("HTTP " + r.status);
+    var p = await r.json();
+
+    var imgs = (p.images||[]).length;
+    var vids = (p.videos||[]).length;
+
+    var h2 = '<div class="back-bar"><div class="back-btn" onclick="loadList(true)">‹ 返回列表</div></div>';
+    h2 += '<div class="wrap"><div class="detail">';
+    h2 += '<div class="d-title">' + esc(p.title || "无标题") + '</div>';
+    h2 += '<div class="d-meta">';
+    h2 += '<div class="avatar">' + esc(firstChar(p.nickname || p.username)) + '</div>';
+    h2 += '<div class="nick">' + esc(p.nickname || p.username || "用户") + '</div>';
+    if(p.level) h2 += '<div class="lvl">Lv' + p.level + '</div>';
+    h2 += '<div class="time">' + fmtTime(p.created_at) + '</div>';
+    h2 += '</div>';
+    h2 += '<div class="d-content">' + esc(p.content || "") + '</div>';
+    h2 += mediaHint(imgs, vids, "网页版不加载，请下载 App 查看");
+    h2 += '<div class="d-stats">';
+    h2 += '<span>💬 ' + (p.comment_count||0) + ' 条评论</span>';
+    h2 += '<span>👍 ' + (p.like_count||0) + ' 点赞</span>';
+    h2 += '</div></div>';
+
+    var cmts = p.comments || [];
+    h2 += '<div class="cmt-sec"><div class="cmt-h">评论 ' + cmts.length + '</div>';
+    if(!cmts.length){
+      h2 += '<div class="empty" style="padding:26px 0"><div class="ic" style="font-size:26px">💬</div>还没有评论</div>';
+    }else{
+      for(var i=0;i<cmts.length;i++){
+        var c = cmts[i];
+        h2 += '<div class="cmt">';
+        h2 += '<div class="cmt-n">' + esc(c.nickname || c.username || "用户") + '</div>';
+        h2 += '<div class="cmt-c">' + esc(c.content || "") + '</div>';
+        h2 += '</div>';
+      }
+    }
+    h2 += '<div style="margin-top:14px"><button class="fg-btn" style="width:100%;padding:11px" onclick="showDl(\'评论功能需在 App 内使用，请下载后参与讨论。\')">登录 App 参与评论</button></div>';
+    h2 += '</div></div>';
+    box.innerHTML = h2;
+    window.scrollTo(0, 0);
+  }catch(e){
+    box.innerHTML = '<div class="back-bar"><div class="back-btn" onclick="loadList(true)">‹ 返回列表</div></div>' +
+      '<div class="wrap"><div class="empty"><div class="ic">😵</div>加载失败<br><span style="font-size:12px;color:#c3c9d3">' + esc(e.message) + '</span></div></div>';
+  }
+}
+
+var scrollLock = false;
+window.addEventListener("scroll", function(){
+  if(scrollLock || state.loading || !state.hasMore) return;
+  if(!document.querySelector(".load-more")) return;
+  var st = window.scrollY + window.innerHeight;
+  var hh = document.body.scrollHeight;
+  if(hh - st < 400){
+    scrollLock = true;
+    loadList(false);
+    setTimeout(function(){ scrollLock = false; }, 900);
+  }
+});
+
+loadList(true);
+</script>
+</body>
+</html>
